@@ -1,0 +1,29 @@
+<div style="width: 100%;position: relative;">
+  
+  <div>
+    <h1 mat-dialog-title style="display:inline-block; cursor:move; padding-top: 15px" mat-dialog-draggable>
+      {{'device.ethernetip-property-select' | translate}}</h1>
+    <mat-icon (click)="onNoClick()"
+      style="float:right;cursor:pointer;color:gray;position: relative; top: 10px; right: 0px">clear</mat-icon>
+  </div>
+  <div style="overflow-y: hidden; overflow-x: hidden; padding-top: 5px;">
+    <div style="display: block;">
+      <div class="my-form-field" style="display: block;margin-bottom: 10px;">
+        <span>{{'device.ethernetip-property-select-found' | translate}}</span>
+        <!-- <mat-selection-list #shoes [multiple]="false">
+          @for (shoe of typesOfShoes; track shoe) {
+            <mat-list-option [value]="shoe">{{shoe}}</mat-list-option>
+          }
+        </mat-selection-list> -->
+    </div>
+      
+    </div>
+  </div>
+
+  <div mat-dialog-actions class="dialog-action">
+    <button mat-raised-button (click)="onNoClick()">{{'dlg.cancel' | translate}}</button>
+    <!-- <button mat-raised-button color="primary" [disabled]="!isValid(data.device)" (click)="onOkClick()"
+      [mat-dialog-close]="data" >{{'dlg.ok' |
+      translate}}</button> -->
+  </div>
+</div>

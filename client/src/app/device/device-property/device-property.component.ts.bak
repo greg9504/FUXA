@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef as MatDialogRef, MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatExpansionPanel } from '@angular/material/expansion';
 import { Subscription, delay } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
@@ -476,7 +476,21 @@ export class DevicePropertyComponent implements OnInit, OnDestroy {
 	ethernetIpModules(): EthernetIPModule[] {
         return <EthernetIPModule[]>Object.values(this.data.device.modules);
     }
+	browseForEthernetIpDevices() {
+		let dialogRef = this.dialog.open(DeviceEnipselectdeviceComponent, {
+            disableClose: true,
+            panelClass: 'app-device-enipselectdevice',
+            data: {},
+            position: { top: '60px' }
+        });
 
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+				this.data.device.property.address = result.socketAddress.sin_addr;
+				this.data.device.name = result.productName;
+			}
+        });
+	}
 	private securityModeToString(mode): string {
 		let secMode = MessageSecurityMode;
 		let result = '';

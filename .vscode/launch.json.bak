@@ -1,0 +1,46 @@
+{
+  // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+  // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+  // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "compounds": [
+    {
+        "name": "Server & Client",
+        "configurations": [
+            "Server Process",
+            "Client Chrome localhost"
+        ]
+    }
+  ],  
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Server Process",
+      "localRoot": "${workspaceFolder}/server",
+      "remoteRoot": "${workspaceFolder}/server",
+      "program": "${workspaceRoot}/server/main.js",
+      "args": [
+        "."
+      ]
+    },
+    {
+      "name": "Client Chrome localhost",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:4200/#",
+      "webRoot": "${workspaceFolder}/client/src"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Server Env-Process",
+      "localRoot": "${workspaceFolder}/server",
+      "remoteRoot": "${workspaceFolder}/server",
+      "program": "${workspaceRoot}/server/main.js",
+      "args": [
+        "--env=test"
+      ]
+    },
+  ]
+}

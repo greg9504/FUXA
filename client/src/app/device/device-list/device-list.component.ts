@@ -275,7 +275,7 @@ export class DeviceListComponent implements OnInit, AfterViewInit {
     isToEdit(type, tag: Tag) {
         if (type === DeviceType.SiemensS7 || type === DeviceType.ModbusTCP || type === DeviceType.ModbusRTU ||
             type === DeviceType.internal || type === DeviceType.EthernetIP || type === DeviceType.FuxaServer ||
-            type === DeviceType.OPCUA || type === DeviceType.GPIO || type === DeviceType.ADSclient ||
+            type === DeviceType.OPCUA || type === DeviceType.GPIO || type === DeviceType.GenericEthernetIP || type === DeviceType.ADSclient ||
             type === DeviceType.WebCam || type === DeviceType.MELSEC || type === DeviceType.REDIS) {
             return true;
         } else if (type === DeviceType.MQTTclient) {

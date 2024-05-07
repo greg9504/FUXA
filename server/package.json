@@ -53,6 +53,7 @@
     "swagger-ui-express": "^5.0.1",
     "winston": "3.7.2",
     "ws": "8.18.0",
+    "st-ethernet-ip": "github:greg9504/ST-node-ethernet-ip#Fuxa",
     "yamljs": "^0.3.0"
   },
   "overrides": {

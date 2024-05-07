@@ -48,7 +48,9 @@ import { DeviceComponent } from './device/device.component';
 import { DevicePropertyComponent } from './device/device-property/device-property.component';
 import { TagOptionsComponent } from './device/tag-options/tag-options.component';
 import { TopicPropertyComponent } from './device/topic-property/topic-property.component';
-import { DeviceListComponent } from './device/device-list/device-list.component';
+import { DeviceListComponent} from './device/device-list/device-list.component';
+import { DeviceEnipmoduleComponent } from './device/device-enipmodule/device-enipmodule.component';
+import { DeviceEnipselectdeviceComponent } from './device/device-enipselectdevice/device-enipselectdevice.component';
 import { DeviceMapComponent } from './device/device-map/device-map.component';
 import { FuxaViewComponent } from './fuxa-view/fuxa-view.component';
 import { CardsViewComponent } from './cards-view/cards-view.component';
@@ -272,6 +274,8 @@ export const myCustomTooltipDefaults: MatTooltipDefaultOptions = {
         TopicPropertyComponent,
         DevicePropertyComponent,
         DeviceWebapiPropertyDialogComponent,
+        DeviceEnipmoduleComponent,
+        DeviceEnipselectdeviceComponent,
         LayoutPropertyComponent,
         TagsIdsConfigComponent,
         PluginsComponent,

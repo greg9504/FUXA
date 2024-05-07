@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "st-ethernet-ip": "github:greg9504/ST-node-ethernet-ip#Fuxa"
+  }
+}

@@ -592,6 +592,78 @@
                         </div>
                     </div>
                 </div>
+    
+				<div *ngSwitchCase="deviceType.GenericEthernetIP">
+                    <div class="my-form-field" style="display: inline-block; margin-bottom: 10px;">
+                        <span>{{'device.property-address-port' | translate}}</span>
+                        <input [(ngModel)]="data.device.property.address" style="width: 350px" type="ip" (click)="onAddressChanged()">
+                    </div>
+                    <div style="display: block; height: 45px;">
+                        <div class="my-form-field" style="display: inline-block; text-align: center;width: 80px;">
+                            <span>{{'device.property-routing' | translate}}</span>
+                            <mat-slide-toggle color="primary" [(ngModel)]="data.device.property.options"></mat-slide-toggle>
+                        </div>
+                        <div class="my-form-field" style="display: inline-block; margin-left: 10px;" *ngIf="data.device.property.options">
+                            <input numberOnly [(ngModel)]="data.device.property.rack" style="width: 20px;" type="text">
+                            <input numberOnly [(ngModel)]="data.device.property.slot" style="width: 20px; margin-left: 5px;" type="text">
+                        </div>
+                    </div>
+                    <mat-divider></mat-divider>
+                    <!-- <div class="my-form-field" style="display: inline-block; margin-bottom: 10px;"> -->
+                        <div class="my-form-field" class="my-expansion-panel">
+                        <mat-expansion-panel #panelProperty expanded="true">
+                        <mat-expansion-panel-header class="header" [collapsedHeight]="'32px'" [expandedHeight]="'32px'">
+                            <mat-panel-title>
+                                <span>{{'device.ethernetip-property-modules' | translate}}</span>
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <div class="expand-panel">
+                                <!-- <div class="my-form-field" style="display: inline-block; margin-bottom: 10px;">
+                                    <span>{{'device.ethernetip-property-ioport' | translate}}</span>
+                                    <input [(ngModel)]="data.device.property.ioport" placeholder="2222" required style="width: 350px" type="number">
+                                </div> -->
+                                
+                                
+                                <mat-list>
+                                    <mat-list-item *ngFor="let item of ethernetIpModules()">
+                                        <span>{{item.name}}</span>
+                                        <button mat-icon-button (click)="onEditModule(item)" class="remove" matTooltip="{{'device.ethernetip-property-edit-module' | translate}}">
+                                            <mat-icon>edit</mat-icon>
+                                        </button>
+                                        <button mat-icon-button (click)="onRemoveEpModule(item)" class="remove" matTooltip="{{'device.ethernetip-property-delete-module' | translate}}">
+                                            <mat-icon>remove_circle_outline</mat-icon>
+                                        </button>
+                                    </mat-list-item>
+                                </mat-list>
+
+                                <button mat-icon-button (click)="onAddEpModule()" class="remove" matTooltip="{{'device.ethernetip-property-add-module' | translate}}">
+                                    <mat-icon>add</mat-icon>
+                                </button>
+                              </div>
+                        <!-- <span>{{'device.ethernetip-property-modules' | translate}}</span> 
+                        <div class="my-form-field" style="display: inline-block; margin-bottom: 10px;">
+                            <span>{{'device.ethernetip-property-ioport' | translate}}</span>
+                            <input [(ngModel)]="data.device.property.ioport" placeholder="2222" required style="width: 350px" type="number">
+                        </div>
+                        <button mat-icon-button (click)="onAddEpModule()" class="remove" matTooltip="{{'device.ethernetip-property-add-module' | translate}}">
+                            <mat-icon>add</mat-icon>
+                        </button>
+                        
+                        <mat-list>
+                            <mat-list-item *ngFor="let item of ethernetIpModules()">
+                                <span>{{item.name}}</span>
+                                <button mat-icon-button (click)="onEditModule(item)" class="remove" matTooltip="{{'device.ethernetip-property-edit-module' | translate}}">
+                                    <mat-icon>edit</mat-icon>
+                                </button>
+                                <button mat-icon-button (click)="onRemoveEpModule(item)" class="remove" matTooltip="{{'device.ethernetip-property-delete-module' | translate}}">
+                                    <mat-icon>remove_circle_outline</mat-icon>
+                                </button>
+                            </mat-list-item>
+                        </mat-list> -->
+                    
+                    <!-- </div> -->
+                </mat-expansion-panel>
+            </div>
             </div>
         </div>
     </div>

@@ -31,9 +31,12 @@ export class Device {
     polling: number;
     /** Tags list of Tag */
     tags: DictionaryTag;
+    /** Memory IO Modules for Ethern/IP, list of type EthernetIPModule indexed by id */
+    modules: any;
 
     constructor(_id: string) {
         this.id = _id;
+        this.modules = {};
     }
 
     static descriptor = {
@@ -55,6 +58,30 @@ interface DictionaryTag {
     [id: string]: Tag;
 }
 
+export class EnipTagOptions {
+    tagType: EnipTagDataSourceType;
+    /** buffer size in bytes */
+    bufferSize: number;
+    /** for getAttributeSingle, optional array of bytes to include that the device requires to identify the requested tag */
+    sendBuffer: string;
+    explicitOpt: {class: number; instance: number; attribute: number};
+     symbolicOpt: {
+        // name: string; use address field
+        program: string;
+        dataType: string;
+     };
+     ioOpt: {
+        ioModuleId: string;
+        ioType: EnipIODataType;
+        ioByteOffset: number; /** byte offset to read for ioType of integer16, byte offset  to start read for bitoffset */
+        ioBitOffset: number; /** 0-7, for ioType bit */
+        ioOutput: boolean; /** if true tag is used to send data, if false (default) tag is for read of input table */
+     };
+     calculatedOpt: {
+        parentId: string;
+        offset: number;
+    };
+ };
 export class Tag {
     /** Tag id, GUID */
     id: string;
@@ -106,6 +133,7 @@ export class Tag {
     direction?: string;
     edge?: string;
 
+    enipOptions: EnipTagOptions;
 
     constructor(_id: string) {
         this.id = _id;
@@ -129,6 +157,7 @@ export class Tag {
         format: 'Number of digits to appear after the decimal point',
         direction: 'A string specifying whether the GPIO should be configured as an input or output. The valid values are: \'in\', \'out\', \'high\', and \'low\'. If \'out\' is specified the GPIO will be configured as an output and the value of the GPIO will be set to 0. \'high\' and \'low\' are variants of \'out\' that configure the GPIO as an output with an initial level of 1 or 0 respectively.',
         edge: 'An optional string specifying the interrupt generating edge or edges for an input GPIO. The valid values are: \'none\', \'rising\', \'falling\' or \'both\'. The default value is \'none\' indicating that the GPIO will not generate interrupts. Whether or not interrupts are supported by an input GPIO is GPIO specific. If interrupts are not supported by a GPIO the edge argument should not be specified. The edge argument is ignored for output GPIOs.',
+        enipOptions: 'EthernetIP options, JSON object.  { tagType: "symbolic|explicit|assembly", symbolPath: string, explClass: number, explInstance: number, explAttr: number'
     };
 }
 
@@ -234,7 +263,32 @@ export class DeviceSecurity {
     privateKeyFileName: string;
     caCertificateFileName: string;
 }
-
+/** Used to hold the configuration for EthernetIP  IO Module */
+export class EthernetIPModule {
+    /** module id guid */
+    id: string;
+    /** module name */
+    name: string;
+    /** description */
+    description: string;
+    /** request packet interval */
+    rpi: number;
+    /** input instance number */
+    inputInstance: number;
+    /** input instance size in bytes */
+    inputSize: number;
+    /** output instance number */
+    outputInstance: number;
+    /** output instance size in bytes */
+    outputSize: number;
+    /** configuration instance number */
+    configurationInstance: number;
+    /** configuration instance size in bytes */
+    configurationSize: number;
+    constructor(_id: string) {
+        this.id = _id;
+    }
+}
 export enum DeviceType {
     FuxaServer = 'FuxaServer',
     SiemensS7 = 'SiemensS7',
@@ -251,7 +305,8 @@ export enum DeviceType {
     GPIO = 'GPIO',
     WebCam = 'WebCam',
     MELSEC = 'MELSEC',
-    REDIS = 'REDIS'
+    REDIS = 'REDIS',
+    GenericEthernetIP = 'GenericEthernetIP',
     // Template: 'template'
 }
 
@@ -263,6 +318,18 @@ export enum TagType {
     DInt = 'DInt',
     DWord = 'DWord',
     Real = 'Real'
+}
+
+export enum EnipTagDataSourceType {
+    symbolic,
+    explicit,
+    assemblyIO,
+    calculated
+}
+
+export enum EnipIODataType {
+    bit,
+    integer16
 }
 
 export enum ModbusTagType {
@@ -440,6 +507,7 @@ export enum BACnetObjectType {
 
 export const DEVICE_PREFIX = 'd_';
 export const TAG_PREFIX = 't_';
+export const ETHERNETIPMODULE_PREFIX = 'm_';
 
 export class DevicesUtils {
     static getDeviceTagText(devices: Device[], id: string): string {
