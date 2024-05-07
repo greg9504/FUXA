@@ -31,7 +31,7 @@ export class Device {
     polling: number;
     /** Tags list of Tag */
     tags: DictionaryTag;
-    /** Memory IO Modules for Ethern/IP, list of type EthernetIPModule indexed by id */
+    /** Memory IO Modules for Ethernet/IP: list {} of type EthernetIPModule indexed by id */
     modules: any;
 
     constructor(_id: string) {
@@ -263,7 +263,7 @@ export class DeviceSecurity {
     privateKeyFileName: string;
     caCertificateFileName: string;
 }
-/** Used to hold the configuration for EthernetIP  IO Module */
+/** Used to hold the configuration for EthernetIP IO Module */
 export class EthernetIPModule {
     /** module id guid */
     id: string;
@@ -285,6 +285,9 @@ export class EthernetIPModule {
     configurationInstance: number;
     /** configuration instance size in bytes */
     configurationSize: number;
+    /** configuration data, hex encoded bytes */
+    configurationData: string;
+
     constructor(_id: string) {
         this.id = _id;
     }
