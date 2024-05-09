@@ -343,6 +343,13 @@ export class DeviceListComponent implements OnInit, AfterViewInit {
             });
             return;
         }
+        if (this.deviceSelected.type === DeviceType.GenericEthernetIP) {
+            this.tagPropertyService.editTagPropertyEnIP(this.deviceSelected, tag, checkToAdd).subscribe(result => {
+                this.tagsMap[tag.id] = tag;
+                this.bindToTable(this.deviceSelected.tags);
+            });
+            return;
+        }
         if (this.deviceSelected.type === DeviceType.WebCam) {
             this.tagPropertyService.editTagPropertyWebcam(this.deviceSelected, tag, checkToAdd).subscribe(result => {
                 this.tagsMap[tag.id] = tag;
