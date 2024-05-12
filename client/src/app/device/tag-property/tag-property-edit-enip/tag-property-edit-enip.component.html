@@ -1,95 +1,133 @@
-<form [formGroup]="formGroup"
-      class="container">
-    <h1 mat-dialog-title class="dialog-title" mat-dialog-draggable>{{'device.tag-property-title' | translate}}</h1>
-    <mat-icon (click)="onNoClick()" class="dialog-close-btn">clear</mat-icon>
-    <div mat-dialog-content>
-        <div class="my-form-field item-block">
-            <span>{{'device.tag-property-device' | translate}}</span>
-            <input formControlName="deviceName" type="text" readonly>
-        </div>
-        <div class="my-form-field item-block mt10">
-            <span>{{'device.tag-property-name' | translate}}</span>
-            <input formControlName="tagName" type="text">
-            <span *ngIf="formGroup.controls.tagName.errors?.name"
-                  class="form-input-error">
-                  {{formGroup.controls.tagName.errors?.name}}
-            </span>
-        </div>
-
-        <div class="my-form-field item-block mt10">
-          <span>{{'device.tag-property-enipType' | translate}}</span>
-        <mat-select formControlName="tagType" style="width: 350px" >
-              <mat-option *ngFor="let eTagType of enipTagDataSourceType" [value]="eTagType.value">
-                  {{ eTagType.text }}
-              </mat-option>
-          </mat-select>
-      </div>
-      <div formGroupName="IO"  *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.assemblyIO" class="my-form-field" style="display: block;margin-bottom: 10px;">
-        <div class="my-form-field item-block mt10">
-              <span>{{'device.tag-enip-io-module-name' | translate}}</span>      
-              <mat-select formControlName="tagIOModule" style="width: 350px">
-                  <mat-option *ngFor="let iOModule of (data.device.modules | keyvalue)" [value]="iOModule.key">
-                      {{ iOModule.value.name }}
-                  </mat-option>
-              </mat-select>
-          </div>
-          <span>{{'device.tag-enip-io-type' | translate}}</span>
-          <mat-radio-group formControlName="tagIOType">
-              <mat-radio-button style="display:inline-block;padding-left:10px;padding-bottom:2px;font-size: 13px;" *ngFor="let enum of enipIODataType" [value]="enum.value">
-                  {{enum.text}}</mat-radio-button>
-          </mat-radio-group>
-
-          <div class="my-form-field item-block mt10">
-              <span>{{'device.tag-enip-io-byte-offset' | translate}}</span>
-              <input numberOnly formControlName="tagIOByteOffset" style="width: 350px" type="number">
-          </div>
-
-          <div *ngIf="isEnIpIOTypeBit()" class="my-form-field item-block mt10">
-              <span>{{'device.tag-enip-io-bit-offset' | translate}}</span>
-              <input numberOnly formControlName="tagIOBitOffset" style="width: 350px" type="number">
-          </div>
-
-          <span>{{'device.tag-enip-io-output' | translate}}</span>
-          <mat-radio-group formControlName="tagIOOutput" fxLayout="row">
-              <mat-radio-button style="display:inline-block;padding-left:10px;padding-bottom:2px;font-size: 13px;" *ngFor="let enum of enipIOReadOrWriteType" [value]="enum.value">
-                  {{enum.text}}</mat-radio-button>
-          </mat-radio-group>          
-      </div>
-      <div formGroupName="Symbolic" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.symbolic" class="my-form-field item-block mt10">
-          <span>{{'device.tag-property-address-sample' | translate}}</span>
-          <input formControlName="tagSymAddress" style="width: 350px" type="text">
-      </div>
-      <div formGroupName="Explicit" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.explicit">
-          <div class="my-form-field item-block mt10">
-              <span>{{'device.tag-enip-class' | translate}}</span>
-              <input numberOnly formControlName="tagExpClass" style="width: 350px" type="number">
-          </div>
-          <div class="my-form-field item-block mt10">
-              <span>{{'device.tag-enip-instance' | translate}}</span>
-              <input numberOnly formControlName="tagExpInstance" style="width: 350px" type="number">
-          </div>
-          <div class="my-form-field item-block mt10">
-              <span>{{'device.tag-enip-attribute' | translate}}</span>
-              <input numberOnly formControlName="tagExpAttribute" style="width: 350px" type="number">
-          </div>
-          <div class="my-form-field item-block mt10">
-              <span>{{'device.tag-enip-buffer' | translate}}</span>
-              <input formControlName="tagExpSendBuffer" style="width: 350px" type="text">
-          </div>
-      </div>
-
-        
-        <div class="my-form-field item-block mt10">
-            <span>{{'device.tag-property-divisor' | translate}}</span>
-            <input numberOnly formControlName="tagDivisor" type="number">
-        </div>
-        <div class="my-form-field item-block mt10">
-            <span>{{'device.tag-property-description' | translate}}</span>
-            <input formControlName="tagDescription" type="text">
-        </div>            
+<form [formGroup]="formGroup" class="container">
+  <h1 mat-dialog-title class="dialog-title" mat-dialog-draggable>{{'device.tag-property-title' | translate}}</h1>
+  <mat-icon (click)="onNoClick()" class="dialog-close-btn">clear</mat-icon>
+  <div mat-dialog-content>
+    <div class="my-form-field item-block">
+      <span>{{'device.tag-property-device' | translate}}</span>
+      <input formControlName="deviceName" type="text" readonly>
     </div>
-    <div mat-dialog-actions class="dialog-action">
-        <button mat-raised-button (click)="onNoClick()">{{'dlg.cancel' | translate}}</button>
-        <button mat-raised-button color="primary" (click)="onOkClick()" [disabled]="formGroup.invalid">{{'dlg.ok' | translate}}</button>
+    <div class="my-form-field item-block mt10">
+      <span>{{'device.tag-property-name' | translate}}</span>
+      <input formControlName="tagName" type="text">
+      <span *ngIf="formGroup.controls.tagName.errors?.name" class="form-input-error">
+        {{formGroup.controls.tagName.errors?.name}}
+      </span>
     </div>
+
+    <div class="my-form-field item-block mt10">
+      <span>{{'device.tag-property-enipType' | translate}}</span>
+      <mat-select formControlName="tagType" style="width: 350px">
+        <mat-option *ngFor="let eTagType of enipTagDataSourceType" [value]="eTagType.value">
+          {{ eTagType.text }}
+        </mat-option>
+      </mat-select>
+    </div>
+    <div formGroupName="IO" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.assemblyIO"
+      class="my-form-field" style="display: block;margin-bottom: 10px;">
+      <div class="my-form-field item-block mt10">
+        <span>{{'device.tag-enip-io-module-name' | translate}}</span>
+        <mat-select formControlName="tagIOModule" style="width: 350px">
+          <mat-option *ngFor="let iOModule of (data.device.modules | keyvalue)" [value]="iOModule.key">
+            {{ iOModule.value.name }}
+          </mat-option>
+        </mat-select>
+      </div>
+      <span>{{'device.tag-enip-io-type' | translate}}</span>
+      <mat-radio-group formControlName="tagIOType">
+        <mat-radio-button style="display:inline-block;padding-left:10px;padding-bottom:2px;font-size: 13px;"
+          *ngFor="let enum of enipIODataType" [value]="enum.value">
+          {{enum.text}}</mat-radio-button>
+      </mat-radio-group>
+
+      <div class="my-form-field item-block mt10">
+        <span>{{'device.tag-enip-io-byte-offset' | translate}}</span>
+        <input numberOnly formControlName="tagIOByteOffset" style="width: 350px" type="number">
+      </div>
+
+      <div *ngIf="isEnIpIOTypeBit()" class="my-form-field item-block mt10">
+        <span>{{'device.tag-enip-io-bit-offset' | translate}}</span>
+        <input numberOnly formControlName="tagIOBitOffset" style="width: 350px" type="number">
+      </div>
+
+      <span>{{'device.tag-enip-io-output' | translate}}</span>
+      <mat-radio-group formControlName="tagIOOutput" fxLayout="row">
+        <mat-radio-button style="display:inline-block;padding-left:10px;padding-bottom:2px;font-size: 13px;"
+          *ngFor="let enum of enipIOReadOrWriteType" [value]="enum.value">
+          {{enum.text}}</mat-radio-button>
+      </mat-radio-group>
+    </div>
+    <div formGroupName="Symbolic" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.symbolic"
+      class="my-form-field item-block mt10">
+      <span>{{'device.tag-property-address-sample' | translate}}</span>
+      <input formControlName="tagSymAddress" style="width: 350px" type="text">
+      <div *ngIf="!hasSymError(); else tagError" class="my-form-field item-block mt10">
+        <div style="overflow: auto;">
+          <!-- <ngx-treetable #treetable [config]="config" (expand)="queryNext($event)"></ngx-treetable> -->
+          <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="example-tree">
+            <!-- This is the tree node template for leaf nodes -->
+            <!-- There is inline padding applied to this node using styles. -->
+            <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle (click)="onTagSelect(node)"
+              [ngClass]="{ 'background-highlight': activeNode === node }">
+              {{node.name}}
+            </mat-tree-node>
+            <!-- This is the tree node template for expandable nodes -->
+            <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+              <div class="mat-tree-node">
+                <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.name">
+                  <mat-icon class="mat-icon-rtl-mirror">
+                    {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+                  </mat-icon>
+                </button>
+                {{node.name}}
+              </div>
+              <!-- There is inline padding applied to this div using styles.
+                        This padding value depends on the mat-icon-button width.  -->
+              <div [class.example-tree-invisible]="!treeControl.isExpanded(node)" role="group">
+                <ng-container matTreeNodeOutlet></ng-container>
+              </div>
+            </mat-nested-tree-node>
+          </mat-tree>
+        </div>
+      </div>
+      <ng-template #tagError>
+        <span>{{error$ | async}}</span>
+      </ng-template>
+
+
+
+    </div>
+    <div formGroupName="Explicit" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.explicit">
+      <div class="my-form-field item-block mt10">
+        <span>{{'device.tag-enip-class' | translate}}</span>
+        <input numberOnly formControlName="tagExpClass" style="width: 350px" type="number">
+      </div>
+      <div class="my-form-field item-block mt10">
+        <span>{{'device.tag-enip-instance' | translate}}</span>
+        <input numberOnly formControlName="tagExpInstance" style="width: 350px" type="number">
+      </div>
+      <div class="my-form-field item-block mt10">
+        <span>{{'device.tag-enip-attribute' | translate}}</span>
+        <input numberOnly formControlName="tagExpAttribute" style="width: 350px" type="number">
+      </div>
+      <div class="my-form-field item-block mt10">
+        <span>{{'device.tag-enip-buffer' | translate}}</span>
+        <input formControlName="tagExpSendBuffer" style="width: 350px" type="text">
+      </div>
+    </div>
+
+
+    <div class="my-form-field item-block mt10">
+      <span>{{'device.tag-property-divisor' | translate}}</span>
+      <input numberOnly formControlName="tagDivisor" type="number">
+    </div>
+    <div class="my-form-field item-block mt10">
+      <span>{{'device.tag-property-description' | translate}}</span>
+      <input formControlName="tagDescription" type="text">
+    </div>
+  </div>
+  <div mat-dialog-actions class="dialog-action">
+    <button mat-raised-button (click)="onNoClick()">{{'dlg.cancel' | translate}}</button>
+    <button mat-raised-button color="primary" (click)="onOkClick()" [disabled]="formGroup.invalid">{{'dlg.ok' |
+      translate}}</button>
+  </div>
 </form>

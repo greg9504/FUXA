@@ -623,7 +623,6 @@
                                     <input [(ngModel)]="data.device.property.ioport" placeholder="2222" required style="width: 350px" type="number">
                                 </div> -->
                                 
-                                
                                 <mat-list>
                                     <mat-list-item *ngFor="let item of ethernetIpModules()">
                                         <span>{{item.name}}</span>
@@ -640,28 +639,6 @@
                                     <mat-icon>add</mat-icon>
                                 </button>
                               </div>
-                        <!-- <span>{{'device.ethernetip-property-modules' | translate}}</span> 
-                        <div class="my-form-field" style="display: inline-block; margin-bottom: 10px;">
-                            <span>{{'device.ethernetip-property-ioport' | translate}}</span>
-                            <input [(ngModel)]="data.device.property.ioport" placeholder="2222" required style="width: 350px" type="number">
-                        </div>
-                        <button mat-icon-button (click)="onAddEpModule()" class="remove" matTooltip="{{'device.ethernetip-property-add-module' | translate}}">
-                            <mat-icon>add</mat-icon>
-                        </button>
-                        
-                        <mat-list>
-                            <mat-list-item *ngFor="let item of ethernetIpModules()">
-                                <span>{{item.name}}</span>
-                                <button mat-icon-button (click)="onEditModule(item)" class="remove" matTooltip="{{'device.ethernetip-property-edit-module' | translate}}">
-                                    <mat-icon>edit</mat-icon>
-                                </button>
-                                <button mat-icon-button (click)="onRemoveEpModule(item)" class="remove" matTooltip="{{'device.ethernetip-property-delete-module' | translate}}">
-                                    <mat-icon>remove_circle_outline</mat-icon>
-                                </button>
-                            </mat-list-item>
-                        </mat-list> -->
-                    
-                    <!-- </div> -->
                 </mat-expansion-panel>
             </div>
             </div>

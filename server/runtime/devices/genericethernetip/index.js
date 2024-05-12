@@ -85,7 +85,8 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 } catch (err) {
                     console.log('caught async execption in connect');
                     console.log(err);
-                    logger.error(`'${device.name}' try to connect error! ${err}`);
+                    // TODO add error lookup to string
+                    logger.error(`'${device.name}' try to connect error! ${JSON.stringify(err)}`);
                     _checkWorking(false);
                     _emitStatus('connect-error');
                     _clearVarsValue();
@@ -335,7 +336,62 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             utils.mergeObjectsValues(device.tags[tagId].daq, settings);
         }
     }
+    this.browse = function (node, callback) {
+        return new Promise(function (resolve, reject) {
+            // if (!node) {
+            //     _askName(Object.values(devices)).then(res => {
+            //         resolve(Object.values(devices));
+            //     });
+            // } else
+            // if (node.id) {
+                if (_checkWorking(true)) {
+                    try {
 
+                        //create new connection to get tag list
+                        _createConnection().then((aconn) => {
+                            const tagList = new STEthernetIp.TagList();
+                            aconn.getControllerTagList(tagList).then(() => {
+                                resolve(tagList);
+                                _checkWorking(false);
+                                aconn.disconnect();
+                            }).catch(error => {
+                                console.log(error);
+                                _checkWorking(false);
+                                aconn.disconnect();
+                                reject("Browse for tags not supported by Ethernet/IP device");
+                            });
+                        }).catch(error => {
+                            console.log(error);
+                                _checkWorking(false);
+                                reject("Connection error while browsing for tags of Ethernet/IP device");
+                        });
+                        
+                        // if (node.parent) {      // BACnet object => read property
+                        //     _checkWorking(false);
+                        // } else {                // BACnet device => read object list
+                        //     _readObjectList(node.id).then(result => {
+                        //         resolve(result);
+                        //         _checkWorking(false);
+                        //     }, err => {
+                        //         reject();
+                        //         _checkWorking(false);
+                        //     });
+                        // }
+                    } catch (err) {
+                        if (err) {
+                            logger.error(`'${device.name}' browse failure! ${err}`);
+                        }
+                        _checkWorking(false);
+                        reject(err);
+                        //_checkWorking(false);
+                    }
+                }
+            // } else {
+            //     reject();
+            //     _checkWorking(false);
+            // }
+        });
+    }
     /**
      * Clear local Items value by set all to null
      */
@@ -357,6 +413,12 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         const items = {};
 
         const tags = Object.values(device.tags);
+        if (tags.length === 0 && ioconnections.length === 0) {
+            // no tags data to send and no io connections
+            // request controller properties to keep connection open
+            await conn?.readControllerProps();
+            console.log(conn.state.controller.name);
+        }
         // read IO module/table tags
         // these values are already in memory, as the IO data is sent periodically over UDP
         // so no additional communication is needed
@@ -541,7 +603,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             try {
                 console.log('closing message connection');
                 await conn.disconnect();
-                console.log('message connectoin closed');
+                console.log('message connection closed');
             } catch (error) {
                 console.log('Error disconnecting messaege connection');
                 console.log(error);
@@ -628,6 +690,25 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         }
         return true;
     }
+    //create a message connection to the ethernet/ip device
+    var _createConnection = async function () {
+        var addr = device.property.address;
+        if (device.property.address.indexOf(':') !== -1) {
+            var addr = device.property.address.substring(0, device.property.address.indexOf(':'));
+           // var temp = device.property.address.substring(device.property.address.indexOf(':') + 1);
+            //port = parseInt(temp);
+        }
+        const aconn = new STEthernetIp.Controller();
+        if (device.property.options) {
+            const path = Buffer.alloc(2);
+            path.writeUInt8(device.property.rack, 0);
+            path.writeUInt8(device.property.slot, 1);
+            await aconn.connect(addr, path, false);
+        } else {
+            await aconn.connect(addr, Buffer.from([]), false);            
+        }
+        return aconn;
+    }
     /**
      * Connect to the ethernet/IP device.  Several connections at once are possible.
      * 0-n IO Connections, one per IO table.  The ethernet/IP IO client binds to UDP
@@ -650,13 +731,18 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             port = parseInt(temp);
         }
 
-        conn = new STEthernetIp.Controller();
-        if (device.property.options) {
-            await conn.connect(addr, device.property.slot, false);
-        } else {
-            await conn.connect(addr, 0, false);
-            console.log('conn is now connected!!!!');
-        }
+        conn = await _createConnection();
+
+        // conn = new STEthernetIp.Controller();
+        // if (device.property.options) {
+        //     const path = Buffer.alloc(2);
+        //     path.writeUInt8(device.property.rack, 0);
+        //     path.writeUInt8(device.property.slot, 1);
+        //     await conn.connect(addr, path, false);
+        // } else {
+        //     await conn.connect(addr, Buffer.from([]), false);            
+        // }
+        console.log('conn is now connected!!!!');
         await _makeIOConnection(addr, device.property.ioport).catch(error => {
             console.log('_makeIOConnections failed');
             console.log(error);
