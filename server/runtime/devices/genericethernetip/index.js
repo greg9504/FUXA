@@ -261,12 +261,16 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         if (device.tags[tagId]) {
             const tag = device.tags[tagId];
             const isStringTag = _isStringTag(tag);
-            let valueToSend = isStringTag ? value : deviceUtils.tagRawCalculator(value, device.tags[tagId]);
-            if (valueToSend === 'true') {
-                valueToSend = 1;
-            } else if (valueToSend === 'false') {
-                valueToSend = 0;
+            let valueToSend = isStringTag ? value : deviceUtils.tagRawCalculator(value, tag);
+            if (tag.enipOptions?.tagType === EnipTagType.symbolic &&
+                (tag.enipOptions?.symbolicOpt.dataType === EnipTypes.BOOL)) {
+                if (valueToSend === 'true') {
+                    valueToSend = 1;
+                } else if (valueToSend === 'false') {
+                    valueToSend = 0;
+                }
             }
+        
 
             // io tag
             if (tag.enipOptions?.tagType === EnipTagType.assemblyIO) {
@@ -280,7 +284,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 }
             }
 
-            //is it explicit data
+            // explicit data
             if (tag.enipOptions?.tagType === EnipTagType.explicit) {
                 
                 let valueBuf = undefined;
