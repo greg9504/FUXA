@@ -1,12 +1,10 @@
-import { Component, EventEmitter, Inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, UntypedFormBuilder, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Component, EventEmitter, Inject, OnDestroy, OnInit, Output, Pipe, PipeTransform } from '@angular/core';
+import { AbstractControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
-import { BehaviorSubject, Subject, of, takeUntil } from 'rxjs';
-import { Device, DeviceType, EnipIODataType, EnipTagDataSourceType, EnipTagOptions, EthernetIPModule, Tag } from '../../../_models/device';
+import { BehaviorSubject, Observable, Subject, takeUntil } from 'rxjs';
+import { Device, DeviceType, EnipIODataType, EnipTagDataSourceType, EnipTypes, EthernetIPModule, Tag } from '../../../_models/device';
 import { HmiService } from '../../../_services/hmi.service';
-import { TreetableComponent, Node, NodeType, TreeType } from '../../../gui-helpers/treetable/treetable.component';
-import { Utils } from '../../../_helpers/utils';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 
@@ -25,6 +23,7 @@ export class EnipTreeNode {
     public children: EnipTreeNode[] = []
   ) { }
 }
+
 @Component({
   selector: 'app-tag-property-edit-enip',
   templateUrl: './tag-property-edit-enip.component.html',
@@ -34,29 +33,32 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
   @Output() result = new EventEmitter<any>();
   formGroup: UntypedFormGroup;
   existingNames = [];
-  error: string = 'Greg';
-  private _error$ = new BehaviorSubject('');
-  public error$ = this._error$.asObservable();
-  // config = { width: '100%', height: '600px', type: TreeType.ToDefine };
-  // @ViewChild(TreetableComponent, {static: false}) treetable: TreetableComponent;
+
+  error$: Observable<string>;// = this._error$.asObservable();
   treeControl = new NestedTreeControl<EnipTreeNode>(node => node.children);
   dataSource = new MatTreeNestedDataSource<EnipTreeNode>();
   activeNode: EnipTreeNode = undefined;
+  isSymLoading: boolean = true;
 
   readonly EnipTagDataSourceType = EnipTagDataSourceType;
+  readonly EnipTypes = EnipTypes;
 
   enipTagDataSourceType = [{ text: 'device.tag-enipType-symbolic', value: EnipTagDataSourceType.symbolic }, { text: 'device.tag-enipType-explicit', value: EnipTagDataSourceType.explicit },
-  { text: 'device.tag-enipType-io', value: EnipTagDataSourceType.assemblyIO }, { text: 'device.tag-enipType-calculated', value: EnipTagDataSourceType.calculated }];
+  { text: 'device.tag-enipType-io', value: EnipTagDataSourceType.assemblyIO }, { text: 'device.tag-enipType-calculated' }];
   enipIODataType = [{ text: 'device.tag-enip-io-type-bit', value: EnipIODataType.bit }, { text: 'device.tag-enip-io-type-integer16', value: EnipIODataType.integer16 }];
   enipIOReadOrWriteType = [{ text: 'device.tag-enip-io-output-read', value: false }, { text: 'device.tag-enip-io-output-write', value: true }];
 
   private destroy$ = new Subject<void>();
+  private _error$ = new BehaviorSubject('');
+  private _error: string = '';
 
   constructor(private fb: UntypedFormBuilder,
     private translateService: TranslateService,
     private hmiService: HmiService,
     public dialogRef: MatDialogRef<TagPropertyEditEnipComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: TagProperty) { }
+    @Inject(MAT_DIALOG_DATA) public data: TagProperty) {
+      this.error$ = this._error$.asObservable();
+    }
 
   ngOnInit() {
     for (let i = 0; i < this.enipTagDataSourceType.length; i++) {
@@ -68,38 +70,37 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
     for (let i = 0; i < this.enipIOReadOrWriteType.length; i++) {
       this.translateService.get(this.enipIOReadOrWriteType[i].text).subscribe((txt: string) => { this.enipIOReadOrWriteType[i].text = txt; });
     }
-    if (this.isGenericEthernetIp()) {
-      if (this.data.tag.enipOptions === undefined) {
-        this.data.tag.enipOptions = {
-          tagType: EnipTagDataSourceType.symbolic,
-          symbolicOpt: {
-            program: undefined,
-            dataType: undefined
-          },
-          explicitOpt: {
-            class: undefined,
-            instance: undefined,
-            attribute: undefined,
-            sendBuffer: undefined
-          }, ioOpt: {
-            ioType: EnipIODataType.bit,
-            ioOutput: false,
-            ioModuleId: undefined,
-            ioBitOffset: 0,
-            ioByteOffset: 0,
-          }
-        };
-      } else if (this.data.tag.enipOptions.ioOpt === undefined) {
-        this.data.tag.enipOptions.ioOpt = {
+    if (this.data.tag.enipOptions === undefined) {
+      this.data.tag.enipOptions = {
+        tagType: EnipTagDataSourceType.symbolic,
+        symbolicOpt: {
+          program: undefined,
+          dataType: undefined
+        },
+        explicitOpt: {
+          class: undefined,
+          instance: undefined,
+          attribute: undefined,
+          sendBuffer: undefined
+        }, ioOpt: {
           ioType: EnipIODataType.bit,
           ioOutput: false,
           ioModuleId: undefined,
           ioBitOffset: 0,
           ioByteOffset: 0,
-        };
-      }
-      // const enipOpt = this.data.tag.enipOptions as EnipTagOptions;
+        }
+      };
+    } else if (this.data.tag.enipOptions.ioOpt === undefined) {
+      this.data.tag.enipOptions.ioOpt = {
+        ioType: EnipIODataType.bit,
+        ioOutput: false,
+        ioModuleId: undefined,
+        ioBitOffset: 0,
+        ioByteOffset: 0,
+      };
     }
+    // const enipOpt = this.data.tag.enipOptions as EnipTagOptions;
+
     this.formGroup = this.fb.group({
       deviceName: [this.data.device.name, Validators.required],
       tagName: [this.data.tag.name, [Validators.required, this.validateName()]],
@@ -113,6 +114,8 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
       }),
       Symbolic: this.fb.group({
         tagSymAddress: [this.data.tag.address, Validators.required],
+        tagSymProgram: [this.data.tag.enipOptions.symbolicOpt.program],//optional
+        tagSymDataType: [this.data.tag.enipOptions.symbolicOpt.dataType, Validators.required],
       }),
       Explicit: this.fb.group({
         tagExpClass: [this.data.tag.enipOptions.explicitOpt.class, Validators.required],
@@ -123,7 +126,33 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
       tagDescription: [this.data.tag.description],
       tagDivisor: [this.data.tag.divisor]
     });
-
+    //listen for browsing of symbolic tags
+    this.hmiService.onDeviceBrowse.pipe(
+      takeUntil(this.destroy$),
+    ).subscribe(values => {
+      if (this.data.device.id === values.device) {
+        try {
+          if (values.error) {
+            console.log(values.error);
+            if (values?.error === 'Device not found!') {
+              this._error = 'Device not enabled, unable to retrieve tags.  Enable device.';
+            } else {
+              this._error = values.error;
+            }
+            this._error$.next(this._error);
+          } else {
+            console.log(values);
+            this.buildTreeNodes(values.result);
+          }
+        } catch (error) {
+          this._error = error.toString();
+          this._error$.next(this._error);
+        }
+        finally {
+          this.isSymLoading = false;
+        }
+      }
+    });
     // enable/disable some controls based on enip tagType, so only those visible will require validation
     this.formGroup.controls.tagType.valueChanges.pipe(
       takeUntil(this.destroy$)
@@ -144,33 +173,6 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
         this.existingNames.push(tag.name);
       }
     });
-
-    this.hmiService.onDeviceBrowse.pipe(
-      takeUntil(this.destroy$),
-    ).subscribe(values => {
-      if (this.data.device.id === values.device) {
-        if (values.error) {
-          //this.addError(values.node, values.error);
-          console.log(values.error);
-          if (values?.error === 'Device not found!') {
-            this.error = 'Device not enabled, unable to retrieve tags.  Enable device.';
-          } else {
-            this.error = values.error;
-          }
-          this._error$.next(this.error);// = of(this.error);
-        } else {
-          const globalVarParent = new Node('0', 'Global Variable Tags');
-          console.log(values);
-          this.buildTreeNodes(values.result);
-        }
-      }
-    });
-    // let n = (node) ? { id: node.id } : null;
-    //       if (this.isBACnet() && node) {
-    //           n['parent'] = (node.parent) ? node.parent.id : null;
-    //       }
-    //      this.hmiService.askDeviceBrowse(this.data.device.id, null);
-    this.queryNext(null);
   }
 
   private buildTreeNodes(plcReadTagsResult: any) {
@@ -203,15 +205,19 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
       nodes.push(parentNode);
     }
     this.dataSource.data = nodes;
-    this.error = '';
+    this._error = '';
+    this._error$.next(this._error);
   }
   onTagSelect(node: EnipTreeNode) {
     this.activeNode = node;
     console.log(node);
+    this.getSymbolicCtrls().get('tagSymAddress').setValue(this.activeNode.name);
+    this.getSymbolicCtrls().get('tagSymDataType').setValue(this.activeNode.enipTag.type.code);
+    this.getSymbolicCtrls().get('tagSymProgram').setValue(this.activeNode.enipTag.program);
   }
   validateName(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      this.error = null;
+      this._error = null;
       if (this.existingNames.indexOf(control.value) !== -1) {
         return { name: this.translateService.instant('msg.device-tag-exist') };
       }
@@ -229,28 +235,10 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
   }
 
   onOkClick(): void {
-    // this.data.nodes = [];
-    //     if (this.isWebApi() || this.isOdbc()) {
-    //         let result = this.getSelectedTreeNodes(Object.values(this.treetable.nodes), null);
-    //         result.forEach((n: Node) => {
-    //             if (n.checked && n.enabled) {
-    //                 this.data.nodes.push(n);
-    //             }
-    //         });
-    //         // this.data.nodes = result;
-    //     }
-
-    //     Object.keys(this.treetable.nodes).forEach((key) => {
-    //       let n: Node = this.treetable.nodes[key];
-    //       if (n.checked && n.enabled && (n.type || !n.childs || n.childs.length == 0)) {
-    //           this.data.nodes.push(this.treetable.nodes[key]);
-    //       }
-    //   });
-
     this.result.emit(this.formGroup.getRawValue());
   }
   hasSymError() {
-    return this.error?.length > 0;
+    return this._error?.length > 0;
   }
   isGenericEthernetIp() {
     return (this.data.device.type === DeviceType.GenericEthernetIP) ? true : false;
@@ -282,6 +270,8 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
         break;
       case EnipTagDataSourceType.symbolic:
         this.enableDisableControls(this.getSymbolicCtrls(), [this.getIOCtrls(), this.getExplicitCtrls()]);
+        this.isSymLoading = true;
+        this.hmiService.askDeviceBrowse(this.data.device.id, null);
         break;
     }
   }
@@ -308,61 +298,6 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
   }
   hasChild = (_: number, node: EnipTreeNode) =>
     !!node.children && node.children.length > 0;
-
-
-  // getSelectedTreeNodes(nodes: Array<Node>, defined: any): Array<Node> {
-  //     let result = [];
-  //     for (let key in nodes) {
-  //         let n: Node = nodes[key];
-  //         if (n.class === NodeType.Array && n.todefine && n.todefine.id && n.todefine.value) {
-  //             let arrayResult = this.getSelectedTreeNodes(n.childs, n.todefine);
-  //             for (let ak in arrayResult) {
-  //                 result.push(arrayResult[ak]);
-  //             }
-  //         } else if (n.class === NodeType.Object && defined && defined.id && defined.value) {
-  //             // search defined attributes
-  //             let childId = null, childValue = null;
-  //             for (let childKey in n.childs)
-  //             {
-  //                 let child = n.childs[childKey];
-  //                 if (child.text === defined.id) {
-  //                     childId = child;
-  //                 } else if (child.text === defined.value) {
-  //                     childValue = child;
-  //                 }
-  //             }
-  //             if (childId && childValue) {
-  //                 let objNode = new Node(childId.id, childId.property);  // node array element (id: id:id, text: current id value)
-  //                 objNode.class = NodeType.Reference;                     // to check
-  //                 objNode.property = childValue.id;                        // value:id
-  //                 objNode.todefine = { selid: childId.text, selval: childValue.text };
-  //                 objNode.type = Utils.getType(childValue.property);
-  //                 objNode.checked = true;
-  //                 objNode.enabled = n.enabled;
-  //                 const exist = Object.values(this.data.device.tags).find((tag: Tag) => tag.address === objNode.id && tag.memaddress === objNode.property);
-  //                 if (exist) {
-  //                     objNode.enabled = false;
-  //                 }
-  //                 result.push(objNode);
-  //             }
-  //         } else if (n.class === NodeType.Variable && n.checked) {
-  //             // let objNode = new Node(n.id.split('>').join(''), n.text);
-  //             let objNode = new Node(n.id, n.text);
-  //             objNode.type = Utils.getType(n.property); //this.isOdbc() ? n.type : Utils.getType(n.property);
-  //             objNode.checked = n.checked;
-  //             objNode.enabled = n.enabled;
-  //             result.push(objNode);
-  //         }
-  //     }
-  //     return result;
-  // }
-  queryNext(node: Node) {
-    // let n = (node) ? { id: node.id } : null;
-    // if (this.isBACnet() && node) {
-    //     n['parent'] = (node.parent) ? node.parent.id : null;
-    // }
-    this.hmiService.askDeviceBrowse(this.data.device.id, null);
-  }
 
 };
 

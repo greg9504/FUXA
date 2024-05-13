@@ -1111,6 +1111,7 @@
     "ethernetip-module-property-output-instance-size": "Output Assembly Instance Size",
     "ethernetip-module-property-config-instance": "Configuration Assembly Instance",
     "ethernetip-module-property-config-instance-size": "Configuration Assembly Instance Size",
+    "ethernetip-module-property-config-data": "Configuration data (usually empty), hex format",
 
     "device.ethernetip-property-select": "Ethernet/IP Devices",
     "device.ethernetip-property-select-found": "Devices found on local network",
@@ -1243,6 +1244,9 @@
     "device.tag-enip-io-output": "Read or Write",
     "device.tag-enip-io-output-read": "Read",
     "device.tag-enip-io-output-write": "Write",
+    "device.tag-enip-sym-device-tags": "Device defined tags",
+    "device.tag-enip-sym-dataType": "Data type",
+    "device.tag-enip-sym-program": "Program",
 
     "device.connect-ok": "Ok",
     "device.connect-error": "Error",

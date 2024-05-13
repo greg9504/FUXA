@@ -240,6 +240,7 @@ import { TagPropertyEditRedisComponent } from './device/tag-property/tag-propert
 import { TagPropertyRedisScanComponent } from './device/tag-property/tag-property-edit-redis/tag-property-redis-scan/tag-property-redis-scan.component';
 import { OnboardingWizardComponent } from './editor/onboarding-wizard/onboarding-wizard.component';
 import { TagPropertyEditEnipComponent } from './device/tag-property/tag-property-edit-enip/tag-property-edit-enip.component';
+import { EnumKeyValuePipe } from './gui-helpers/enumKeyPipe/enum-key-value.pipe';
 
 export function createTranslateLoader(http: HttpClient) {
     return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -416,6 +417,7 @@ export const myCustomTooltipDefaults: MatTooltipDefaultOptions = {
         LanguageTextPropertyComponent,
         LanguageTextListComponent,
         ClientScriptAccessComponent,
+        EnumKeyValuePipe,
         TagPropertyEditWebcamComponent,
         VideoPropertyComponent,
         HtmlSchedulerComponent,

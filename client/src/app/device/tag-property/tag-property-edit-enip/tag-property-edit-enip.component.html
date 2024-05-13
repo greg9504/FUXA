@@ -16,7 +16,7 @@
 
     <div class="my-form-field item-block mt10">
       <span>{{'device.tag-property-enipType' | translate}}</span>
-      <mat-select formControlName="tagType" style="width: 350px">
+      <mat-select formControlName="tagType">
         <mat-option *ngFor="let eTagType of enipTagDataSourceType" [value]="eTagType.value">
           {{ eTagType.text }}
         </mat-option>
@@ -58,10 +58,27 @@
     </div>
     <div formGroupName="Symbolic" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.symbolic"
       class="my-form-field item-block mt10">
-      <span>{{'device.tag-property-address-sample' | translate}}</span>
-      <input formControlName="tagSymAddress" style="width: 350px" type="text">
+      <div class="my-form-field item-block mt10">
+        <span>{{'device.tag-property-address-sample' | translate}}</span>
+        <input formControlName="tagSymAddress" type="text">
+      </div>
+      <div class="my-form-field item-block mt10">
+        <span>{{'device.tag-enip-sym-program' | translate}}</span>
+        <input formControlName="tagSymProgram" type="text">
+      </div>
+      <div class="my-form-field item-block mt10">
+        <span>{{'device.tag-enip-sym-dataType' | translate}}</span>
+        <mat-select formControlName="tagSymDataType">
+          <mat-option *ngFor="let eTagType of (EnipTypes | enumKeyValue)" [value]="eTagType.value">
+            {{ eTagType.key }}
+          </mat-option>
+        </mat-select>
+      </div>
+      <div class="my-form-field item-block mt10">
+        <span>{{'device.tag-enip-sym-device-tags' | translate}}</span>        
+      </div>
       <div *ngIf="!hasSymError(); else tagError" class="my-form-field item-block mt10">
-        <div style="overflow: auto;">
+        <div *ngIf="!isSymLoading; else tagSymLoading" style="overflow: auto;">
           <!-- <ngx-treetable #treetable [config]="config" (expand)="queryNext($event)"></ngx-treetable> -->
           <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="example-tree">
             <!-- This is the tree node template for leaf nodes -->
@@ -86,15 +103,18 @@
                 <ng-container matTreeNodeOutlet></ng-container>
               </div>
             </mat-nested-tree-node>
+            
           </mat-tree>
         </div>
+        <ng-template #tagSymLoading>
+          <mat-progress-bar
+          mode="indeterminate"
+          class="example-tree-progress-bar"></mat-progress-bar>
+        </ng-template>
       </div>
       <ng-template #tagError>
-        <span>{{error$ | async}}</span>
+        <span class="form-input-error">{{error$ | async}}</span>
       </ng-template>
-
-
-
     </div>
     <div formGroupName="Explicit" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.explicit">
       <div class="my-form-field item-block mt10">
