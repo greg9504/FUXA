@@ -106,7 +106,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                         } else {
                             logger.debug('in connect checkWorking returned false');
                             _emitStatus('connect-error');
-                            return reject();                            
+                            return reject();
                         }
                     } else {
                         logger.error(`'${device.name}' missing connection data!`);
@@ -384,46 +384,44 @@ function GenericEthernetIPclient(_data, _logger, _events) {
     }
     this.browse = function (node, callback) {
         return new Promise(function (resolve, reject) {
-            // if (!node) {
-            //     _askName(Object.values(devices)).then(res => {
-            //         resolve(Object.values(devices));
-            //     });
-            // } else
-            // if (node.id) {
-                if (_checkWorking(true)) {
-                    try {
+            (async () => {
+                try {
 
-                        //create new connection to get tag list
-                        _createConnection().then((aconn) => {
-                            const tagList = new STEthernetIp.TagList();
-                            aconn.getControllerTagList(tagList).then(() => {
+                    if (_checkWorking(true)) {
+                        try {
+                            //create new connection to get tag list
+                            const aconn = await _createConnection();
+                            try {
+                                const tagList = new STEthernetIp.TagList();
+                                await aconn.getControllerTagList(tagList);
+                                await aconn.disconnect();
                                 resolve(tagList);
                                 _checkWorking(false);
-                                aconn.disconnect();
-                            }).catch(error => {
-                                logger.debug(`Browse for tags error ${error}`);
-                                _checkWorking(false);
-                                aconn.disconnect();
-                                reject("Browse for tags not supported by Ethernet/IP device");
-                            });
-                        }).catch(error => {
-                            logger.debug(`Browse for tags error ${error}`);
-                                _checkWorking(false);
-                                reject("Connection error while browsing for tags of Ethernet/IP device");
-                        });
-                    } catch (err) {
-                        if (err) {
-                            logger.error(`'${device.name}' browse failure! ${err}`);
+                            } finally {
+                                aconn.destroy();
+                            }
+                        } catch (err) {
+                            let errstr = JSON.stringify(err)
+                            if (err && err.generalStatusCode === 0x08) {
+                                errstr = 'Browse for tags not supported by Ethernet/IP device';
+                                logger.debug(errstr);
+                            } else {
+                                logger.error(`Error retrieving symbolic tags for ethernet/ip device.`);
+                                logger.error(errstr);
+                            }
+                            _checkWorking(false);
+                            reject(errstr);
                         }
-                        _checkWorking(false);
-                        reject(err);
-                        //_checkWorking(false);
                     }
+                } catch (err) {
+                    logger.debug('caught async execption in browse for tags');
+                    logger.debug(err);
+                    // TODO add error lookup to string
+                    logger.error(`'${device.name}' try to browse for tags error! ${JSON.stringify(err)}`);
+                    _checkWorking(false);
+                    return reject('Unable to browse for tags');
                 }
-            // } else {
-            //     reject();
-            //     _checkWorking(false);
-            // }
+            })()
         });
     }
     var _isStringTag = function (tag) {
@@ -477,7 +475,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 tag.enipOptions?.ioOpt?.ioOutput === false)); // input tag
             for (const tag of connTags) {
                 items[tag.id] = ioconn.getValue(tag.id);
-                logger.debug(`tag ${tag.name} value: ${items[tag.id]}`);
+                logger.debug(`IO tag ${tag.name} value: ${items[tag.id]}`);
             }
         }
 
@@ -488,6 +486,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             }
             const theTag = device.tags[id];
             const tagValue = await conn?.getAttributeSingle(theTag.enipOptions.explicitOpt.class, theTag.enipOptions.explicitOpt.instance, theTag.enipOptions.explicitOpt.attribute);
+            logger.debug(`Read Explicit tag ${theTag.name} value:`);
             logger.debug(tagValue);
             items[id] = tagValue;
             tagMemoryTable[id] = tagValue;//do we need this?
@@ -531,7 +530,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 }
                 const aTag = conn.newTag(device.tags[id].address);
                 await conn.readTag(aTag);
-                logger.debug(`Read value ${aTag.value}`);
+                logger.debug(`Read symbolic tag ${device.tags[id].name} value ${aTag.value}`);
                 items[id] = aTag.value === null ? '' : aTag.value;
             }
         }

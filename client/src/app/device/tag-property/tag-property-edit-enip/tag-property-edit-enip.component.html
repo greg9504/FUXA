@@ -78,9 +78,9 @@
         <span>{{'device.tag-enip-sym-device-tags' | translate}}</span>        
       </div>
       <div *ngIf="!hasSymError(); else tagError" class="my-form-field item-block mt10">
-        <div *ngIf="!isSymLoading; else tagSymLoading" style="overflow: auto;">
+        <div *ngIf="!isSymLoading; else tagSymLoading">
           <!-- <ngx-treetable #treetable [config]="config" (expand)="queryNext($event)"></ngx-treetable> -->
-          <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="my-form-field example-tree">
+          <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="my-form-field tag-tree">
             <!-- This is the tree node template for leaf nodes -->
             <!-- There is inline padding applied to this node using styles. -->
             <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle (click)="onTagSelect(node)"
@@ -99,7 +99,7 @@
               </div>
               <!-- There is inline padding applied to this div using styles.
                         This padding value depends on the mat-icon-button width.  -->
-              <div [class.example-tree-invisible]="!treeControl.isExpanded(node)" role="group">
+              <div [class.tag-tree-invisible]="!treeControl.isExpanded(node)" role="group">
                 <ng-container matTreeNodeOutlet></ng-container>
               </div>
             </mat-nested-tree-node>
@@ -109,11 +109,11 @@
         <ng-template #tagSymLoading>
           <mat-progress-bar
           mode="indeterminate"
-          class="example-tree-progress-bar"></mat-progress-bar>
+          class="tag-tree-progress-bar"></mat-progress-bar>
         </ng-template>
       </div>
       <ng-template #tagError>
-        <span class="message-error">{{error$ | async}}</span>
+        <span class="tags-error">{{error$ | async}}</span>
       </ng-template>
     </div>
     <div formGroupName="Explicit" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.explicit">

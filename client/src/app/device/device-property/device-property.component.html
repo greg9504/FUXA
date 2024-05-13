@@ -624,20 +624,22 @@
                                 </div> -->
                                 
                                 <mat-list>
-                                    <mat-list-item *ngFor="let item of ethernetIpModules()">
-                                        <span>{{item.name}}</span>
+                                    <mat-list-item *ngFor="let item of ethernetIpModules()" class="module-list-item">                                        
                                         <button mat-icon-button (click)="onEditModule(item)" class="remove" matTooltip="{{'device.ethernetip-property-edit-module' | translate}}">
                                             <mat-icon>edit</mat-icon>
                                         </button>
-                                        <button mat-icon-button (click)="onRemoveEpModule(item)" class="remove" matTooltip="{{'device.ethernetip-property-delete-module' | translate}}">
-                                            <mat-icon>remove_circle_outline</mat-icon>
+                                        <span>{{item.name}}</span>
+                                        <button mat-icon-button (click)="onRemoveEpModule(item)" class="remove remove-item" matTooltip="{{'device.ethernetip-property-delete-module' | translate}}">
+                                            <mat-icon>clear</mat-icon>
                                         </button>
                                     </mat-list-item>
                                 </mat-list>
+                                <div class="button-container">
 
-                                <button mat-icon-button (click)="onAddEpModule()" class="remove" matTooltip="{{'device.ethernetip-property-add-module' | translate}}">
+                                <button mat-icon-button mat-mini-fab (click)="onAddEpModule()" color="primary" class="remove module-add-button"  matTooltip="{{'device.ethernetip-property-add-module' | translate}}">
                                     <mat-icon>add</mat-icon>
                                 </button>
+                            </div>
                               </div>
                 </mat-expansion-panel>
             </div>

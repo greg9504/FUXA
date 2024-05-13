@@ -92,3 +92,15 @@
     padding-left: 5px !important;
     padding-right: 5px !important;
 }
+
+.button-container {
+    display: flex;
+    justify-content: flex-end;
+}
+.module-list-item {
+    display: flex;
+    & .remove-item {margin-left: auto;}
+}
+.module-add-button {
+    margin-left:auto;
+}
