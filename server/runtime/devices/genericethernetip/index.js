@@ -62,18 +62,18 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                         // console.log('in connect, calling checkWroking');
                         if (_checkWorking(true)) {
                             //console.log('in connect checkworking returned true');
-                            console.log(`'${device.name}' try to connect ${device.property.address}`);
-                            logger.info(`'${device.name}' try to connect ${device.property.address}`, true);
+                            logger.debug(`'${device.name}' try to connect ${device.property.address}`);
+                            //logger.info(`'${device.name}' try to connect ${device.property.address}`, true);
                             await _connect();
                             connected = true;
-                            console.log(`'${device.name}' connected!`);
-                            logger.info(`'${device.name}' connected!`, true);
+                            logger.debug(`'${device.name}' connected!`);
+                            //logger.info(`'${device.name}' connected!`, true);
                             _emitStatus('connect-ok');
                             _checkWorking(false);
                             return resolve();
 
                         } else {
-                            console.log('in connect checkWorking returned false');
+                            logger.debug('in connect checkWorking returned false');
                             _emitStatus('connect-error');
                             return reject();                            
                         }
@@ -84,8 +84,8 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                         return reject();
                     }
                 } catch (err) {
-                    console.log('caught async execption in connect');
-                    console.log(err);
+                    logger.debug('caught async execption in connect');
+                    logger.debug(err);
                     // TODO add error lookup to string
                     logger.error(`'${device.name}' try to connect error! ${JSON.stringify(err)}`);
                     _checkWorking(false);
@@ -131,7 +131,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             //console.log('polling: checkworking returned true enip device connected ' + conn?.established);
             if (ioconnections?.length > 0) {
                 for (const ioconn of ioconnections) {
-                    console.log('polling: ioconn connected ' + ioconn.connected);
+                    logger.debug('polling: ioconn connected ' + ioconn.connected);
                 }
             }
             if (conn && this.isConnected()) {
@@ -160,11 +160,11 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                     _checkWorking(false, true);
                 }
             } else {
-                console.log('calling checkWorking in polling, not connected');
+                logger.debug('calling checkWorking in polling, not connected');
                 _checkWorking(false, true);
             }
         } else {
-            console.log('in polling, checkworking returned false');
+            logger.debug('in polling, checkworking returned false');
         }
     }
 
@@ -273,7 +273,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                             theTag.enipOptions.explicitOpt.instance,
                             theTag.enipOptions.explicitOpt.attribute,
                             valueBuf).then(() => {
-                    logger.info(`'${device.tags[tagId].name}' setValue(${tagId}, ${valueToSend})`, true, true);
+                    //logger.info(`'${device.tags[tagId].name}' setValue(${tagId}, ${valueToSend})`, true, true);
                 }).catch(error => {
                     logger.error(`'${device.tags[tagId].name}' setValue error! ${error}`);
                 }); 
@@ -288,8 +288,8 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 );
                 aTag.value = valueToSend;
                 conn.writeTag(aTag).then(() => {
-                    console.log(`Sending value ${valueToSend}`);
-                    logger.info(`'${device.tags[tagId].name}' setValue(${tagId}, ${valueToSend})`, true, true);
+                    logger.debug(`Sending value ${valueToSend}`);
+                    //logger.info(`'${device.tags[tagId].name}' setValue(${tagId}, ${valueToSend})`, true, true);
                 }).catch(error => {
                     logger.error(`'${device.tags[tagId].name}' setValue error! ${error}`);
                 }); 
@@ -365,13 +365,13 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                                 _checkWorking(false);
                                 aconn.disconnect();
                             }).catch(error => {
-                                console.log(error);
+                                logger.debug(`Browse for tags error ${error}`);
                                 _checkWorking(false);
                                 aconn.disconnect();
                                 reject("Browse for tags not supported by Ethernet/IP device");
                             });
                         }).catch(error => {
-                            console.log(error);
+                            logger.debug(`Browse for tags error ${error}`);
                                 _checkWorking(false);
                                 reject("Connection error while browsing for tags of Ethernet/IP device");
                         });
@@ -428,7 +428,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 tag.enipOptions?.ioOpt?.ioOutput === false)); // input tag
             for (const tag of connTags) {
                 items[tag.id] = ioconn.getValue(tag.id);
-                console.log(`tag ${tag.name} value: ${items[tag.id]}`);
+                logger.debug(`tag ${tag.name} value: ${items[tag.id]}`);
             }
         }
 
@@ -439,7 +439,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             }
             const theTag = device.tags[id];
             const tagValue = await conn?.getAttributeSingle(theTag.enipOptions.explicitOpt.class, theTag.enipOptions.explicitOpt.instance, theTag.enipOptions.explicitOpt.attribute);
-            console.log(tagValue);
+            logger.debug(tagValue);
             items[id] = tagValue;
             tagMemoryTable[id] = tagValue;//do we need this?
         }
@@ -459,15 +459,17 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 await conn.readTagGroup(group);
                                
                 group.forEach(tag => {
-                    console.log(tag.value);
+                    logger.debug(tag.value);
                     items[tag.FuxaId] = tag.value;
                 });
                 
             } catch(error) {
-                console.log(JSON.stringify(error));
+                //console.log(JSON.stringify(error));
                 if (error.generalStatusCode !== 8) {//0x08 is not supported
                     //error is something other than not supported
                     throw(error);
+                } else {
+                    logger.info(`'${device.name}' does not support group symbolic tag reads`, true);
                 }
                 // next polling try single tag reads
                 connSupportsTagGroup = false;
@@ -480,7 +482,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 }
                 const aTag = conn.newTag(device.tags[id].address);
                 await conn.readTag(aTag);
-                console.log(`Read value ${aTag.value}`);
+                logger.debug(`Read value ${aTag.value}`);
                 items[id] = aTag.value === null ? '' : aTag.value;
             }
         }
@@ -516,7 +518,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
     var _waitForIOConnections = function () {
 
         return new Promise((resolve, reject) => {
-            console.log(`in waitingForIOConnections, numberOfIOScannersWaitingToConnect: ${numberOfIOScannersWaitingToConnect}, connectionAttempts: ${connectionAttempts}`);
+            logger.debug(`in waitingForIOConnections, numberOfIOScannersWaitingToConnect: ${numberOfIOScannersWaitingToConnect}, connectionAttempts: ${connectionAttempts}`);
 
             if (numberOfIOScannersWaitingToConnect > 0) {
                 connectionAttempts--;
@@ -529,7 +531,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 for (let ioconn of ioconnections) {
                     ioconn.removeListener('connected', _ioConnectionEstablished);
                 }
-                console.log('io connections finished connecting');
+                logger.debug('io connections finished connecting');
                 resolve('IO connections made.');
             }
         });
@@ -540,11 +542,11 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             if (globalIOScanner) {
                 globalIOScanner.socket.close(() => {
                     globalIOScanner = undefined;
-                    console.log('scanner closed');
+                    logger.debug('scanner closed');
                     successCallback(true);
                 });
             } else {
-                console.log('scanner not open, success');
+                logger.debug('scanner not open, success');
                 successCallback(true);
             }
         } catch (err) {
@@ -562,27 +564,27 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         });
     }
     var _disconnectAll = async function () {
-        console.log('disconnectAll!!!!!!');
+        logger.debug('disconnectAll!!!!!!');
         //close each of the IO tcp connections
         for (let ioconn of ioconnections) {
             if (ioconn) {
                 ioconn.run = false;
                 try {
-                    console.log('closing io connection...')
+                    logger.debug('closing io connection...')
                     await ioconn.tcpController.disconnect();
-                    console.log('io connection closed');
+                    logger.debug('io connection closed');
                 } catch (error) {
-                    console.log('Error disconnecting io connection');
-                    console.log(error);
+                    logger.debug('Error disconnecting io connection');
+                    logger.debug(error);
                     ioconn.tcpController.destroy();
                     ioconn.tcpController._removeControllerEventHandlers();
-                    console.log('forced io connection closed');
+                    logger.debug('forced io connection closed');
                 }
                 const filteredConn = globalIOScanner.connections.filter(gioconn => {
                     const ret =  gioconn !== ioconn;
                     return ret;
              } );
-             console.log(`filtered connections length ${filteredConn.length}`);
+             logger.debug(`filtered connections length ${filteredConn.length}`);
                 ioconn = undefined;
                 globalIOScanner.connections = filteredConn;
             }
@@ -596,15 +598,15 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         //close the connection used to send explicity and symbolic messages
         if (conn !== undefined) {
             try {
-                console.log('closing message connection');
+                logger.debug('closing message connection');
                 await conn.disconnect();
-                console.log('message connection closed');
+                logger.debug('message connection closed');
             } catch (error) {
-                console.log('Error disconnecting messaege connection');
-                console.log(error);
+                logger.debug('Error disconnecting messaege connection');
+                logger.debug(error);
                 conn.destroy();
                 conn._removeControllerEventHandlers();
-                console.log('forced message connection closed');
+                logger.debug('forced message connection closed');
             }
            conn = undefined;
         }
@@ -635,7 +637,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         }
     }
     var _makeIOConnection = async function (addr, ioport) {
-        console.log('Make IO Connections');
+        logger.debug('Make IO Connections');
         ioconnections = [];
         numberOfIOScannersWaitingToConnect = 0;
         connectionAttempts = 5;
@@ -737,10 +739,10 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         // } else {
         //     await conn.connect(addr, Buffer.from([]), false);            
         // }
-        console.log('conn is now connected!!!!');
+        logger.debug('ethernet/ip conn is now connected!!!!');
         await _makeIOConnection(addr, device.property.ioport).catch(error => {
-            console.log('_makeIOConnections failed');
-            console.log(error);
+            logger.debug('_makeIOConnections failed');
+            logger.debug(error);
             throw (error);
         });
     }
