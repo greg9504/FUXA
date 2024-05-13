@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Inject, OnDestroy, OnInit, Output, Pipe, PipeTransform } from '@angular/core';
+import { Component, EventEmitter, Inject, OnDestroy, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';

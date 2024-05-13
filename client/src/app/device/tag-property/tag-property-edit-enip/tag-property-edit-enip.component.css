@@ -14,10 +14,13 @@
     background: rgba(10, 118, 168, 0.268);
   }
 
+  .example-tree {
+    height: 300px;
+  }
   .example-tree-progress-bar {
     margin-left: 30px;
   }
-  
+
 .example-tree-invisible {
     display: none;
   }

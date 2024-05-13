@@ -12,13 +12,44 @@ const deviceUtils = require('../device-utils');
 const EnipTagType = {//EnipTagDataSourceType
     symbolic: 0,
     explicit: 1,
-    assemblyIO: 2,
-    calculated: 3
+    assemblyIO: 2
 }
 const EnipIODataType = {
     bit: 0,
     integer16: 1
 }
+const EnipTypes = {
+    BOOL: 0xc1,
+    SINT: 0xc2,
+    INT: 0xc3,
+    DINT: 0xc4,
+    LINT: 0xc5,
+    USINT: 0xc6,
+    UINT: 0xc7,
+    UDINT: 0xc8,
+    REAL: 0xca,
+    LREAL: 0xcb,
+    STIME: 0xcc,
+    DATE: 0xcd,
+    TIME_AND_DAY: 0xce,
+    DATE_AND_STRING: 0xcf,
+    STRING: 0xd0,
+    WORD: 0xd1,
+    DWORD: 0xd2,
+    BIT_STRING: 0xd3,
+    LWORD: 0xd4,
+    STRING2: 0xd5,
+    FTIME: 0xd6,
+    LTIME: 0xd7,
+    ITIME: 0xd8,
+    STRINGN: 0xd9,
+    SHORT_STRING: 0xda,
+    TIME: 0xdb,
+    EPATH: 0xdc,
+    ENGUNIT: 0xdd,
+    STRINGI: 0xde,
+    STRUCT: 0x02a0
+};
 var globalIOScanner = undefined; //shared by all Ethernet/IP devices
 function GenericEthernetIPclient(_data, _logger, _events) {
 
@@ -228,7 +259,9 @@ function GenericEthernetIPclient(_data, _logger, _events) {
      */
     this.setValue = function (tagId, value) {
         if (device.tags[tagId]) {
-            let valueToSend = deviceUtils.tagRawCalculator(value, device.tags[tagId]);
+            const tag = device.tags[tagId];
+            const isStringTag = _isStringTag(tag);
+            let valueToSend = isStringTag ? value : deviceUtils.tagRawCalculator(value, device.tags[tagId]);
             if (valueToSend === 'true') {
                 valueToSend = 1;
             } else if (valueToSend === 'false') {
@@ -236,11 +269,11 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             }
 
             // io tag
-            if (device.tags[tagId].enipOptions?.tagType === EnipTagType.assemblyIO) {
+            if (tag.enipOptions?.tagType === EnipTagType.assemblyIO) {
                 // find connection associated with the tag
                 for (const ioconn of ioconnections) {
-                    if (device.tags[tagId].enipOptions?.ioOpt?.ioModuleId === ioconn.id &&
-                        device.tags[tagId].enipOptions?.ioOpt?.ioOutput === true) { //output tag
+                    if (tag.enipOptions?.ioOpt?.ioModuleId === ioconn.id &&
+                        tag.enipOptions?.ioOpt?.ioOutput === true) { //output tag
                             ioconn.setValue(tagId, valueToSend);
                             return true;
                     }
@@ -248,24 +281,23 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             }
 
             //is it explicit data
-            if (device.tags[tagId].enipOptions?.tagType === EnipTagType.explicit) {
+            if (tag.enipOptions?.tagType === EnipTagType.explicit) {
                 
-                const theTag = device.tags[id];
                 let valueBuf = undefined;
-                if (theTag.enipOptions.explicitOpt?.class  === undefined ||
-                    theTag.enipOptions.explicitOpt?.instance === undefined ||
-                    theTag.enipOptions.explicitOpt?.attribute === undefined) {
+                if (tag.enipOptions.explicitOpt?.class  === undefined ||
+                    tag.enipOptions.explicitOpt?.instance === undefined ||
+                    tag.enipOptions.explicitOpt?.attribute === undefined) {
                     
-                    logger.error(`'${device.tags[tagId].name}' Explicit tag definition missing class or instance or attribute`);
+                    logger.error(`'${tag.name}' Explicit tag definition missing class or instance or attribute`);
                     return false;
 
                 }
-                if (theTag.enipOptions?.sendBuffer?.length > 0) {
-                    const trimedVal = theTag.enipOptions.sendBuffer.replace(/\s/g, "");
+                if (tag.enipOptions?.sendBuffer?.length > 0) {
+                    const trimedVal = tag.enipOptions.sendBuffer.replace(/\s/g, "");
                     try {
                         valueBuf = Buffer.from(trimedVal, 'hex');
                     } catch (error) {
-                        logger.error(`'${device.tags[tagId].name}' error converting send buffer from hex ${error}`);
+                        logger.error(`'${tag.name}' error converting send buffer from hex ${error}`);
                     }
                 }
                 
@@ -273,25 +305,25 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                             theTag.enipOptions.explicitOpt.instance,
                             theTag.enipOptions.explicitOpt.attribute,
                             valueBuf).then(() => {
-                    //logger.info(`'${device.tags[tagId].name}' setValue(${tagId}, ${valueToSend})`, true, true);
+                    //logger.info(`'${tag.name}' setValue(${tagId}, ${valueToSend})`, true, true);
                 }).catch(error => {
-                    logger.error(`'${device.tags[tagId].name}' setValue error! ${error}`);
+                    logger.error(`'${tag.name}' setValue error! ${error}`);
                 }); 
                 return true;
             }
 
             //symbolic
-            if (device.tags[tagId].enipOptions?.tagType === EnipTagType.symbolic) {
-                const aTag = new STEthernetIp.Tag(device.tags[tagId].address,
-                    device.tags[tagId].enipOptions?.symbolicOpt.program,
-                    device.tags[tagId].enipOptions?.symbolicOpt.dataType
+            if (tag.enipOptions?.tagType === EnipTagType.symbolic) {
+                const enipTag = new STEthernetIp.Tag(device.tags[tagId].address,
+                    tag.enipOptions?.symbolicOpt.program,
+                    tag.enipOptions?.symbolicOpt.dataType
                 );
-                aTag.value = valueToSend;
-                conn.writeTag(aTag).then(() => {
+                enipTag.value = valueToSend;
+                conn.writeTag(enipTag).then(() => {
                     logger.debug(`Sending value ${valueToSend}`);
-                    //logger.info(`'${device.tags[tagId].name}' setValue(${tagId}, ${valueToSend})`, true, true);
+                    //logger.info(`'${tag.name}' setValue(${tagId}, ${valueToSend})`, true, true);
                 }).catch(error => {
-                    logger.error(`'${device.tags[tagId].name}' setValue error! ${error}`);
+                    logger.error(`'${tag.name}' setValue error! ${error}`);
                 }); 
                 return true;
             }
@@ -389,6 +421,19 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             //     _checkWorking(false);
             // }
         });
+    }
+    var _isStringTag = function (tag) {
+        if (tag.enipOptions?.tagType === EnipTagType.symbolic &&
+            (tag.enipOptions?.symbolicOpt.dataType === EnipTypes.SHORT_STRING  ||
+                tag.enipOptions?.symbolicOpt.dataType === EnipTypes.DATE_AND_STRING  ||
+                tag.enipOptions?.symbolicOpt.dataType === EnipTypes.STRING  ||
+                tag.enipOptions?.symbolicOpt.dataType === EnipTypes.STRING2  ||
+                tag.enipOptions?.symbolicOpt.dataType === EnipTypes.STRINGI  ||
+                tag.enipOptions?.symbolicOpt.dataType === EnipTypes.STRINGN
+            )) {
+            return true;
+        }
+        return false;
     }
     /**
      * Clear local Items value by set all to null
@@ -636,14 +681,14 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             }
         }
     }
-    var _makeIOConnection = async function (addr, ioport) {
-        logger.debug('Make IO Connections');
+    var _makeIOConnection = async function (addr, ioport) {        
         ioconnections = [];
         numberOfIOScannersWaitingToConnect = 0;
         connectionAttempts = 5;
         if (device.modules !== undefined) {
             const modules = Object.values(device.modules);
             if (modules.length > 0) {
+                logger.debug('Make IO Connections');
                 numberOfIOScannersWaitingToConnect = modules.length;
                 // if (globalIOScanner !== undefined) {
                 //     //ioscanner.socket.close();

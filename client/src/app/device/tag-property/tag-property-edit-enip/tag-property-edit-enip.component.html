@@ -80,7 +80,7 @@
       <div *ngIf="!hasSymError(); else tagError" class="my-form-field item-block mt10">
         <div *ngIf="!isSymLoading; else tagSymLoading" style="overflow: auto;">
           <!-- <ngx-treetable #treetable [config]="config" (expand)="queryNext($event)"></ngx-treetable> -->
-          <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="example-tree">
+          <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="my-form-field example-tree">
             <!-- This is the tree node template for leaf nodes -->
             <!-- There is inline padding applied to this node using styles. -->
             <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle (click)="onTagSelect(node)"
@@ -113,7 +113,7 @@
         </ng-template>
       </div>
       <ng-template #tagError>
-        <span class="form-input-error">{{error$ | async}}</span>
+        <span class="message-error">{{error$ | async}}</span>
       </ng-template>
     </div>
     <div formGroupName="Explicit" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.explicit">
