@@ -364,6 +364,27 @@ function init(_io, _api, _settings, _log, eventsMain) {
                 logger.error(`${Events.IoEventTypes.DEVICE_ENABLE}: ${err}`);
             }
         });
+        // client ask browse for devices
+        socket.on(Events.IoEventTypes.DEVICE_BROWSE_FOR_DEVICES, (message) => {
+            try {
+                if (message) {
+                    if (message.device) {
+                        devices.browseForDevices(message.device, message.node, function (nodes) { 
+                            io.emit(Events.IoEventTypes.DEVICE_BROWSE_FOR_DEVICES, nodes);
+                        }).then(result => {
+                            message.result = result;
+                            io.emit(Events.IoEventTypes.DEVICE_BROWSE_FOR_DEVICES, message);
+                        }).catch(function (err) {
+                            logger.error(`${Events.IoEventTypes.DEVICE_BROWSE_FOR_DEVICES}: ${err}`);
+                            message.error = err;
+                            io.emit(Events.IoEventTypes.DEVICE_BROWSE_FOR_DEVICES, message);
+                        });
+                    }
+                }
+            } catch (err) {
+                logger.error(`${Events.IoEventTypes.DEVICE_BROWSE_FOR_DEVICES}: ${err}`);
+            }
+        });
     });
 
     setInterval(() => {

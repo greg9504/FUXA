@@ -24,7 +24,8 @@ const IoEventTypes = {
     ALIVE: 'heartbeat',
     SCHEDULER_UPDATED: 'scheduler:updated',
     SCHEDULER_ACTIVE: 'scheduler:event-active',
-    SCHEDULER_REMAINING: 'scheduler:remaining-time'
+    SCHEDULER_REMAINING: 'scheduler:remaining-time',
+    DEVICE_BROWSE_FOR_DEVICES: 'device-find-devices',
 }
 
 // module.exports = IoEventTypes;

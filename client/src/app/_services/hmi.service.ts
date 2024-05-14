@@ -35,6 +35,7 @@ export class HmiService {
     @Output() onSchedulerEventActive: EventEmitter<any> = new EventEmitter();
     @Output() onSchedulerRemainingTime: EventEmitter<any> = new EventEmitter();
     @Output() onGaugeEvent: EventEmitter<any> = new EventEmitter();
+    @Output() onBrowseForDevices: EventEmitter<any> = new EventEmitter();
 
     onServerConnection$ = new BehaviorSubject<boolean>(false);
 
@@ -286,6 +287,10 @@ export class HmiService {
         this.socket.on(IoEventTypes.SCHEDULER_REMAINING, (message) => {
             this.onSchedulerRemainingTime.emit(message);
         });
+        // device browse
+        this.socket.on(IoEventTypes.DEVICE_BROWSE_FOR_DEVICES, (message) => {
+            this.onBrowseForDevices.emit(message);
+        });
         // device node attribute
         this.socket.on(IoEventTypes.DEVICE_NODE_ATTRIBUTE, (message) => {
             this.onDeviceNodeAttribute.emit(message);
@@ -405,6 +410,16 @@ export class HmiService {
         if (this.socket) {
             let msg = { device: deviceId, node: node };
             this.socket.emit(IoEventTypes.DEVICE_BROWSE, msg);
+        }
+    }
+
+    /**
+     * Ask device browse to backend
+     */
+    public askBrowseForDevices(deviceId: string, node: any) {
+        if (this.socket) {
+            let msg = { device: deviceId, node: node };
+            this.socket.emit(IoEventTypes.DEVICE_BROWSE_FOR_DEVICES, msg);
         }
     }
 
@@ -753,6 +768,7 @@ export enum IoEventTypes {
     SCRIPT_CONSOLE = 'script-console',
     SCRIPT_COMMAND = 'script-command',
     ALIVE = 'heartbeat',
+    DEVICE_BROWSE_FOR_DEVICES = 'device-find-devices',
     SCHEDULER_UPDATED = 'scheduler:updated',
     SCHEDULER_ACTIVE = 'scheduler:event-active',
     SCHEDULER_REMAINING = 'scheduler:remaining-time'

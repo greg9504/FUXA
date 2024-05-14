@@ -332,7 +332,21 @@ function Device(data, runtime) {
             }
         });
     }
-
+    
+    /** look for devices of the same type on the network */
+    this.browseForDevices = function (path, callback) {
+        return new Promise(function (resolve, reject) {
+            if (data.type === DeviceEnum.GenericEthernetIP) {
+                comm.browseForDevices(path, callback).then(function (result) {
+                    resolve(result);
+                }).catch(function (err) {
+                    reject(err);
+                });
+            }else {
+                reject('Browse for devices not supported!');
+            }
+        });
+    }
     /**
      * Call Device to return Tag/Node attribute (only OPCUA)
      */

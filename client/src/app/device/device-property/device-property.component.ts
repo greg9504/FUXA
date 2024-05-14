@@ -10,6 +10,7 @@ import { ProjectService } from '../../_services/project.service';
 import { DeviceType, DeviceSecurity, MessageSecurityMode, SecurityPolicy, ModbusOptionType, ModbusReuseModeType, RedisReadModeType, RedisOptions, EthernetIPModule, ETHERNETIPMODULE_PREFIX, Device } from './../../_models/device';
 import { DeviceEnipmoduleComponent } from '../device-enipmodule/device-enipmodule.component';
 import { Utils } from '../../_helpers/utils';
+import { DeviceEnipselectdeviceComponent } from '../device-enipselectdevice/device-enipselectdevice.component';
 
 @Component({
 	selector: 'app-device-property',
@@ -476,6 +477,21 @@ export class DevicePropertyComponent implements OnInit, OnDestroy {
 	ethernetIpModules(): EthernetIPModule[] {
         return <EthernetIPModule[]>Object.values(this.data.device.modules);
     }
+	browseForEthernetIpDevices() {
+		let dialogRef = this.dialog.open(DeviceEnipselectdeviceComponent, {
+            disableClose: true,
+            panelClass: 'app-device-enipselectdevice',
+            data: {},
+            position: { top: '60px' }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+				this.data.device.property.address = result.socketAddress.sin_addr;
+				this.data.device.name = result.productName;
+			}
+        });
+	}
 
 	private securityModeToString(mode): string {
 		let secMode = MessageSecurityMode;

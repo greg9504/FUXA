@@ -61,7 +61,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
     var lastStatus = '';                // Last Device status     
     var working = false;                // Working flag to manage overloading polling and connection
     var conn;// = new STEthernetIp.Controller();  // connection for explicit and symbolic messaging
-    var globalIOScanner;                      // Connection Manager for IO exchange
+    //var globalIOScanner;                      // Connection Manager for IO exchange
     var ioconnections = [];             //  IO connections
     var numberOfIOScannersWaitingToConnect = 0;
     var connectionAttempts = 5;
@@ -381,6 +381,41 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         if (device.tags[tagId]) {
             utils.mergeObjectsValues(device.tags[tagId].daq, settings);
         }
+    }
+    this.browseForDevices = function (path, callback) {
+        return new Promise(function (resolve, reject) {
+            (async () => {
+                try {
+                    if (_checkWorking(true)) {
+                        try {
+                            //default is port 51687
+                            const browser = new STEthernetIp.Browser(51687, "0.0.0.0", false);//, updateRate: number=3000, disconnectMultiplier: number=4);
+                            browser.start();
+                            await new Promise(resolve => setTimeout(resolve, 6500));
+                            browser.stop();
+                            browser.socket.close();
+                            //const result = JSON.stringify(browser.deviceList);
+                            _checkWorking(false);
+                            resolve(browser.deviceList);
+
+                        } catch (err) {
+                            let errstr = JSON.stringify(err)
+                            logger.error(`Error retrieving symbolic tags for ethernet/ip device.`);
+                            logger.error(errstr);
+                            _checkWorking(false);
+                            reject(errstr);
+                        }
+                    }
+                } catch (err) {
+                    logger.debug('caught async execption in browse for tags');
+                    logger.debug(err);
+                    // TODO add error lookup to string
+                    logger.error(`'${device.name}' try to browse for tags error! ${JSON.stringify(err)}`);
+                    _checkWorking(false);
+                    return reject('Unable to browse for tags');
+                }
+            })()
+        });
     }
     this.browse = function (node, callback) {
         return new Promise(function (resolve, reject) {
@@ -839,6 +874,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
 
 module.exports = {
     init: function (settings) {
+        console.log('init plugin Ethernet/IP');
     },
     create: function (data, logger, events, manager) {
         // To use with plugin
