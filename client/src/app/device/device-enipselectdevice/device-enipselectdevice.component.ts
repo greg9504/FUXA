@@ -41,15 +41,15 @@ export class DeviceEnipselectdeviceComponent implements OnInit, OnDestroy {
   constructor(private translateService: TranslateService,
     private hmiService: HmiService,
     public dialogRef: MatDialogRef<DeviceEnipselectdeviceComponent>,
-		@Inject(MAT_DIALOG_DATA) public data: any) { }
+		@Inject(MAT_DIALOG_DATA) public data: any) {
+      this.error$ = this._error$.asObservable();
+     }
 
   ngOnInit() {
-    //console.log('ngOnInit');
     //listen for browsing of ethernet/ip devices
     this.hmiService.onBrowseForDevices.pipe(
       takeUntil(this.destroy$),
     ).subscribe(values => {
-      //if (this.data.device.id === values.device) {
         try {
           if (values.error) {
             console.log(values.error);
@@ -62,6 +62,9 @@ export class DeviceEnipselectdeviceComponent implements OnInit, OnDestroy {
           } else {
            // console.log(values);
             this.devices = values.result;
+            if (this.devices.length > 0) {
+              this.selectedDevice = this.devices[0];
+            }
           }
         } catch (error) {
           this._error = error.toString();
@@ -70,7 +73,6 @@ export class DeviceEnipselectdeviceComponent implements OnInit, OnDestroy {
         finally {
           this.isDevicesLoading = false;
         }
-      //}
     });
     this.isDevicesLoading = true;
     this.hmiService.askBrowseForDevices('getEthernetIpDevices', null);
@@ -84,15 +86,14 @@ export class DeviceEnipselectdeviceComponent implements OnInit, OnDestroy {
 	}
   onOkClick(): void {
     this.dialogRef.close(this.selectedDevice);
-
   }
   isValid(): boolean {
-    return !this.isDevicesLoading;
+    return !this.isDevicesLoading  && !this.hasError();
   }
   onSelectDevice(device: browserDevice) {
     this.selectedDevice = device;
   }
   hasError(): boolean {
-    return false;
+    return this._error?.length > 0;
   }
 }
