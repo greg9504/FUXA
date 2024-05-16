@@ -557,7 +557,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 await conn.readTagGroup(group);
                                
                 group.forEach(tag => {
-                    logger.debug(tag.value);
+                    logger.debug(`Read symbolic tag ${tag.name} in group value ${tag.value}`);
                     items[tag.FuxaId] = tag.value;
                 });
                 
@@ -701,7 +701,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         if (globalIOScanner?.connections?.length === 0) {
             const result = await _closeScannerWrapper();
         }
-        //close the connection used to send explicity and symbolic messages
+        //close the connection used to send explicit and symbolic messages
         if (conn !== undefined) {
             try {
                 logger.debug('closing message connection');
@@ -782,6 +782,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                     totalTimeout += ioconn.tcpController.timeout_sp;
                     let self = this;
                     ioconn.on('connected', _ioConnectionEstablished);
+                    //track various socket events for debugging purposes
                     ioconn.tcpController.on('error', (error)=> {
                         logger.debug('IOController enip socket error ' + error);
                         //ioconn.tcpController.established_conn = false;            
@@ -798,12 +799,12 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                         logger.debug(`IOController enip socket end ${msg}`);
                         //ioconn.tcpController.established_conn = false;
                     });
-                    ioconnections.push(ioconn);                   
-                    // Above does forwardOpen async, returns before connection is open
-                    // connection is not marked open until first UDP packet (acutal data) is received
+                    ioconnections.push(ioconn);                                       
                 }
                 _mapIOTags();
                 connectionAttempts = Math.trunc(totalTimeout/500);
+                // Above does forwardOpen async, returns before connection is open
+                // connection is not marked open until first UDP packet (acutal data) is received
                 return _waitForIOConnections(totalTimeout);
             }
         }
@@ -819,6 +820,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
             //port = parseInt(temp);
         }
         const aconn = new STEthernetIp.Controller();
+        // track various socket events for debugging purposes
         aconn.on('error', (error)=> {
             logger.debug('Controller enip socket error ' + error);
             //aconn.established_conn = false;            
@@ -878,7 +880,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         // } else {
         //     await conn.connect(addr, Buffer.from([]), false);            
         // }
-        logger.debug(`${device.name} ethernet/ip conn is now connected!!!!`);
+        logger.debug(`${device.name} ethernet/ip explicit/symbolic conn is now connected!!!!`);
         await _makeIOConnection(addr, device.property.ioport).catch(error => {
             logger.debug('_makeIOConnections failed');
             logger.debug(error);
