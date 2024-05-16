@@ -104,21 +104,28 @@ export enum EnipTypes {
 // }
 export class EnipTagOptions {
     tagType: EnipTagDataSourceType;
-    // /** buffer size in bytes */
-    // bufferSize: number;
-    explicitOpt: {class: number; instance: number; attribute: number;
-        /** for getAttributeSingle, optional array of bytes to include that the device requires to identify the requested tag */
-    sendBuffer: string;
+    explicitOpt: {
+        class: number;
+        instance: number;
+        attribute: number;
+        /** is this a read or write message? (getAttributeSingle vs setAttributeSingle)
+         * true - getAttributeSingle
+         * false - setAttributeSingle
+         */
+        getOrSend: boolean;
+        /** for getAttributeSingle, optional array of bytes (hex) to include that
+         * the device requires to identify the requested tag */
+        sendBuffer: string;
     };
      symbolicOpt: {
-        // name: string; use address field
+        // name: string; use address field in tag object
         program: string;
         dataType: EnipTypes;
      };
      ioOpt: {
         ioModuleId: string;
         ioType: EnipIODataType;
-        ioByteOffset: number; /** byte offset to read for ioType of integer16, byte offset  to start read for bitoffset */
+        ioByteOffset: number; /** byte offset to read/set for ioType of integer16, byte offset to start read/set for bitoffset */
         ioBitOffset: number; /** 0-7, for ioType bit */
         ioOutput: boolean; /** if true tag is used to send data, if false (default) tag is for read of input table */
      };

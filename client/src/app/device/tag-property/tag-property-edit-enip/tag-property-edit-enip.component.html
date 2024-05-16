@@ -75,7 +75,7 @@
         </mat-select>
       </div>
       <div class="my-form-field item-block mt10">
-        <span>{{'device.tag-enip-sym-device-tags' | translate}}</span>        
+        <span>{{'device.tag-enip-sym-device-tags' | translate}}</span>
       </div>
       <div *ngIf="!hasSymError(); else tagError" class="my-form-field item-block mt10">
         <div *ngIf="!isSymLoading; else tagSymLoading">
@@ -103,20 +103,19 @@
                 <ng-container matTreeNodeOutlet></ng-container>
               </div>
             </mat-nested-tree-node>
-            
+
           </mat-tree>
         </div>
         <ng-template #tagSymLoading>
-          <mat-progress-bar
-          mode="indeterminate"
-          class="tag-tree-progress-bar"></mat-progress-bar>
+          <mat-progress-bar mode="indeterminate" class="tag-tree-progress-bar"></mat-progress-bar>
         </ng-template>
       </div>
       <ng-template #tagError>
         <span class="tags-error">{{error$ | async}}</span>
       </ng-template>
     </div>
-    <div formGroupName="Explicit" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.explicit">
+    <div formGroupName="Explicit" *ngIf="this.formGroup.controls.tagType.value === EnipTagDataSourceType.explicit"
+      class="my-form-field" style="display: block;margin-bottom: 10px;">
       <div class="my-form-field item-block mt10">
         <span>{{'device.tag-enip-class' | translate}}</span>
         <input numberOnly formControlName="tagExpClass" style="width: 350px" type="number">
@@ -129,6 +128,16 @@
         <span>{{'device.tag-enip-attribute' | translate}}</span>
         <input numberOnly formControlName="tagExpAttribute" style="width: 350px" type="number">
       </div>
+
+      <span>{{'device.tag-enip-getOrSend' | translate}}</span>
+      <mat-radio-group formControlName="tagExpGetAttribute">
+        <mat-radio-button style="display:inline-block;padding-left:10px;padding-bottom:2px;font-size: 13px;"
+          *ngFor="let enum of enipExplicitGetOrSetType" [value]="enum.value">
+          {{enum.text}}</mat-radio-button>
+      </mat-radio-group>
+
+      <!-- *ngIf="this.getExplicitCtrls().get('tagExpGetAttribute').value" -->
+
       <div class="my-form-field item-block mt10">
         <span>{{'device.tag-enip-buffer' | translate}}</span>
         <input formControlName="tagExpSendBuffer" style="width: 350px" type="text">

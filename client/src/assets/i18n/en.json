@@ -1234,6 +1234,9 @@
     "device.tag-enip-class": "Class",
     "device.tag-enip-instance": "Instance",
     "device.tag-enip-attribute": "Attribute",
+    "device.tag-enip-getOrSend": "Get Attribute or Set Attribute?",
+    "device.tag-enip-get": "Get and Set",
+    "device.tag-enip-set": "Set Only",
     "device.tag-enip-buffer": "Additional bytes (hex format ex: 00 01 ff)",
 
     "device.tag-enip-io-module-name": "IO Module/Table",
@@ -1248,6 +1251,7 @@
     "device.tag-enip-sym-device-tags": "Device defined tags",
     "device.tag-enip-sym-dataType": "Data type",
     "device.tag-enip-sym-program": "Program",
+    "device.tag-enip-sym-browseerror": "Device not enabled, unable to retrieve tags.  Enable device.",
 
     "device.connect-ok": "Ok",
     "device.connect-error": "Error",

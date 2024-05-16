@@ -3,7 +3,7 @@ import { AbstractControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Valid
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Observable, Subject, takeUntil } from 'rxjs';
-import { Device, DeviceType, EnipIODataType, EnipTagDataSourceType, EnipTypes, EthernetIPModule, Tag } from '../../../_models/device';
+import { Device, EnipIODataType, EnipTagDataSourceType, EnipTypes, EthernetIPModule, Tag } from '../../../_models/device';
 import { HmiService } from '../../../_services/hmi.service';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
@@ -22,6 +22,10 @@ export class EnipTreeNode {
     public fuxaTag = undefined,
     public children: EnipTreeNode[] = []
   ) { }
+}
+enum ExplicitType {
+  Get = 1,
+  Set = 0,
 }
 
 @Component({
@@ -47,10 +51,12 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
   { text: 'device.tag-enipType-io', value: EnipTagDataSourceType.assemblyIO }, { text: 'device.tag-enipType-calculated' }];
   enipIODataType = [{ text: 'device.tag-enip-io-type-bit', value: EnipIODataType.bit }, { text: 'device.tag-enip-io-type-integer16', value: EnipIODataType.integer16 }];
   enipIOReadOrWriteType = [{ text: 'device.tag-enip-io-output-read', value: false }, { text: 'device.tag-enip-io-output-write', value: true }];
+  enipExplicitGetOrSetType = [{text: 'device.tag-enip-get', value: true}, {text: 'device.tag-enip-set', value: false}];
 
   private destroy$ = new Subject<void>();
   private _error$ = new BehaviorSubject('');
   private _error: string = '';
+  private _notConnectedError = '';
 
   constructor(private fb: UntypedFormBuilder,
     private translateService: TranslateService,
@@ -70,6 +76,11 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
     for (let i = 0; i < this.enipIOReadOrWriteType.length; i++) {
       this.translateService.get(this.enipIOReadOrWriteType[i].text).subscribe((txt: string) => { this.enipIOReadOrWriteType[i].text = txt; });
     }
+    for (let i = 0; i < this.enipExplicitGetOrSetType.length; i++) {
+      this.translateService.get(this.enipExplicitGetOrSetType[i].text).subscribe((txt: string) => { this.enipExplicitGetOrSetType[i].text = txt; });
+    }
+
+    this.translateService.get('device.tag-enip-sym-browseerror').subscribe((txt: string) => { this._notConnectedError = txt; });
     if (this.data.tag.enipOptions === undefined) {
       this.data.tag.enipOptions = {
         tagType: EnipTagDataSourceType.symbolic,
@@ -81,6 +92,7 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
           class: undefined,
           instance: undefined,
           attribute: undefined,
+          getOrSend: true,
           sendBuffer: undefined
         }, ioOpt: {
           ioType: EnipIODataType.bit,
@@ -121,7 +133,8 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
         tagExpClass: [this.data.tag.enipOptions.explicitOpt.class, Validators.required],
         tagExpInstance: [this.data.tag.enipOptions.explicitOpt.instance, Validators.required],
         tagExpAttribute: [this.data.tag.enipOptions.explicitOpt.attribute, Validators.required],
-        tagExpSendBuffer: [this.data.tag.enipOptions.explicitOpt.sendBuffer, Validators.required],
+        tagExpGetAttribute: [this.data.tag.enipOptions.explicitOpt.getOrSend, Validators.required],
+        tagExpSendBuffer: [this.data.tag.enipOptions.explicitOpt.sendBuffer],
       }),
       tagDescription: [this.data.tag.description],
       tagDivisor: [this.data.tag.divisor]
@@ -135,7 +148,7 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
           if (values.error) {
             console.log(values.error);
             if (values?.error === 'Device not found!') {
-              this._error = 'Device not enabled, unable to retrieve tags.  Enable device.';
+              this._error = this._notConnectedError;
             } else {
               this._error = values.error;
             }
@@ -159,8 +172,15 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
     ).subscribe(enipTagType => {
       this.updateTagControls(enipTagType);
     });
+    // this.getExplicitCtrls().get('tagExpGetAttribute').valueChanges.pipe(
+    //   takeUntil(this.destroy$)
+    // ).subscribe(getOrSet => {
+    //   this.onGetOrSendChange();
+    // });
     // need to run the enable/disable once on loading in case editing existing tag
     this.updateTagControls(this.formGroup.controls.tagType.value);
+    //this.onGetOrSendChange();
+
 
     this.formGroup.updateValueAndValidity();
     Object.keys(this.data.device.tags).forEach((key) => {
@@ -217,7 +237,6 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
   }
   validateName(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      this._error = null;
       if (this.existingNames.indexOf(control.value) !== -1) {
         return { name: this.translateService.instant('msg.device-tag-exist') };
       }
@@ -240,22 +259,19 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
   hasSymError() {
     return this._error?.length > 0;
   }
-  isGenericEthernetIp() {
-    return (this.data.device.type === DeviceType.GenericEthernetIP) ? true : false;
-  }
   isEnIpSymbolic() {
-    return (this.isGenericEthernetIp() && (this.data.tag.enipOptions?.tagType === EnipTagDataSourceType.symbolic)) ? true : false;
+    return ((this.formGroup.controls.tagType.value === EnipTagDataSourceType.symbolic)) ? true : false;
   }
   isEnIpExplicit() {
-    return (this.isGenericEthernetIp() && (this.data.tag.enipOptions?.tagType === EnipTagDataSourceType.explicit)) ? true : false;
+    return ((this.formGroup.controls.tagType.value === EnipTagDataSourceType.explicit)) ? true : false;
   }
   isEnIpIO() {
     //return (this.formGroup.controls.tagType.value === EnipTagDataSourceType.assemblyIO);
 
-    return (this.isGenericEthernetIp() && (this.data.tag.enipOptions?.tagType === EnipTagDataSourceType.assemblyIO)) ? true : false;
+    return ((this.formGroup.controls.tagType.value === EnipTagDataSourceType.assemblyIO)) ? true : false;
   }
   isEnIpIOTypeBit() {
-    return (this.isGenericEthernetIp() && (this.data.tag?.enipOptions?.ioOpt?.ioType === EnipIODataType.bit)) ? true : false;
+    return ((this.formGroup.controls.tagIOType?.value === EnipIODataType.bit)) ? true : false;
   }
   ethernetIpModules(): EthernetIPModule[] {
     return <EthernetIPModule[]>Object.values(this.data.device.modules);
@@ -296,9 +312,14 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
   getSymbolicCtrls(): FormGroup {
     return this.formGroup.get('Symbolic') as FormGroup;
   }
-  hasChild = (_: number, node: EnipTreeNode) =>
-    !!node.children && node.children.length > 0;
+  onGetOrSendChange() {
+    if (this.getExplicitCtrls().get('tagExpGetAttribute').value) {
+      this.getExplicitCtrls().get('tagExpSendBuffer').disable();
+    } else {
+      this.getExplicitCtrls().get('tagExpSendBuffer').enable();
+    }
 
+  }
 };
 
 interface TagProperty {
