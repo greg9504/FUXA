@@ -80,7 +80,7 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
       this.translateService.get(this.enipExplicitGetOrSetType[i].text).subscribe((txt: string) => { this.enipExplicitGetOrSetType[i].text = txt; });
     }
 
-    this.translateService.get('device.tag-enip-sym-browseerror').subscribe((txt: string) => { this._notConnectedError = txt; });
+    this._notConnectedError = this.translateService.instant('device.tag-enip-sym-browseerror');
     if (this.data.tag.enipOptions === undefined) {
       this.data.tag.enipOptions = {
         tagType: EnipTagDataSourceType.symbolic,
