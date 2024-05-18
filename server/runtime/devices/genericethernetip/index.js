@@ -116,7 +116,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                     }
                 } catch (err) {
                     logger.debug('caught async execption in connect');
-                    logger.debug(err);
+                    logger.debug(err.toString());
                     // TODO add error lookup to string
                     logger.error(`'${device.name}' try to connect error! ${JSON.stringify(err)}`);
                     _checkWorking(false);
@@ -831,7 +831,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
         const aconn = new STEthernetIp.Controller();
         // track various socket events for debugging purposes
         aconn.on('error', (error)=> {
-            logger.debug(`${device.name}Controller enip socket error ${error}`);
+            logger.debug(`${device.name} Controller enip socket error ${error}`);
             //aconn.established_conn = false;            
         });
         aconn.on('end', (msg) => {
