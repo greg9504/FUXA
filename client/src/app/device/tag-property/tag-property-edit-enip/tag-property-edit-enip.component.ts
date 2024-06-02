@@ -136,8 +136,7 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
         tagExpGetAttribute: [this.data.tag.enipOptions.explicitOpt.getOrSend, Validators.required],
         tagExpSendBuffer: [this.data.tag.enipOptions.explicitOpt.sendBuffer],
       }),
-      tagDescription: [this.data.tag.description],
-      tagDivisor: [this.data.tag.divisor]
+      tagDescription: [this.data.tag.description]
     });
     //listen for browsing of symbolic tags
     this.hmiService.onDeviceBrowse.pipe(
@@ -271,7 +270,7 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
     return ((this.formGroup.controls.tagType.value === EnipTagDataSourceType.assemblyIO)) ? true : false;
   }
   isEnIpIOTypeBit() {
-    return ((this.formGroup.controls.tagIOType?.value === EnipIODataType.bit)) ? true : false;
+    return ((this.getIOCtrls().controls.tagIOType?.value === EnipIODataType.bit)) ? true : false;
   }
   ethernetIpModules(): EthernetIPModule[] {
     return <EthernetIPModule[]>Object.values(this.data.device.modules);
@@ -312,6 +311,9 @@ export class TagPropertyEditEnipComponent implements OnInit, OnDestroy {
   getSymbolicCtrls(): FormGroup {
     return this.formGroup.get('Symbolic') as FormGroup;
   }
+  hasChild = (_: number, node: EnipTreeNode) =>
+    !!node.children && node.children.length > 0;
+
   onGetOrSendChange() {
     if (this.getExplicitCtrls().get('tagExpGetAttribute').value) {
       this.getExplicitCtrls().get('tagExpSendBuffer').disable();
