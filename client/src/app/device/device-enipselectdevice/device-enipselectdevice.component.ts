@@ -33,10 +33,10 @@ export class DeviceEnipselectdeviceComponent implements OnInit, OnDestroy {
   error$: Observable<string>;
   isDevicesLoading: boolean = true;
   devices: browserDevice[] = [];
+  selectedDevice: browserDevice = undefined;
   private _error$ = new BehaviorSubject('');
   private _error: string = '';
   private destroy$ = new Subject<void>();
-  private selectedDevice: browserDevice = undefined;
 
   constructor(private translateService: TranslateService,
     private hmiService: HmiService,
