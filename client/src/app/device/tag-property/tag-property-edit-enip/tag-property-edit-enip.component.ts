@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, OnDestroy, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Observable, Subject, takeUntil } from 'rxjs';
 import { Device, EnipIODataType, EnipTagDataSourceType, EnipTypes, EthernetIPModule, Tag } from '../../../_models/device';
