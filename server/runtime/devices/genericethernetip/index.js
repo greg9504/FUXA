@@ -299,8 +299,8 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 }
                 logger.debug(`${device.name} ${tag.name} setValue buffer: ${value}`);
                 let strBuf = undefined;
-                if ((value === undefined || value === null) && tag.enipOptions?.sendBuffer?.length > 0) {
-                    strBuf = tag.enipOptions.sendBuffer;
+                if ((value === undefined || value === null) && tag.enipOptions?.explicitOpt?.sendBuffer?.length > 0) {
+                    strBuf = tag.enipOptions.explicitOpt.sendBuffer;
                 } else if (typeof value === 'string') {
                     strBuf = value;
                 }
@@ -536,7 +536,17 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 continue;
             }
             const theTag = device.tags[id];
-            const tagValue = await conn?.getAttributeSingle(theTag.enipOptions.explicitOpt.class, theTag.enipOptions.explicitOpt.instance, theTag.enipOptions.explicitOpt.attribute);
+            let valueBuf = undefined;
+                if (theTag.enipOptions?.explicitOpt?.sendBuffer?.length > 0) {
+                    const trimedVal = theTag.enipOptions.explicitOpt.sendBuffer.replace(/\s/g, "");
+                try {
+                    valueBuf = Buffer.from(trimedVal, 'hex');
+                } catch (error) {
+                    logger.error(`${device.name} '${theTag.name}' error converting send buffer from hex ${error}`);
+                    return false;
+                }
+                }   
+            const tagValue = await conn?.getAttributeSingle(theTag.enipOptions.explicitOpt.class, theTag.enipOptions.explicitOpt.instance, theTag.enipOptions.explicitOpt.attribute, valueBuf);
             logger.debug(`${device.name} Read Explicit tag ${theTag.name} value:`);
             logger.debug(tagValue);
             items[id] = tagValue;
