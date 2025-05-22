@@ -183,6 +183,8 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                     }
                 } catch (err) {
                     logger.error(`'${device.name}' polling error: ${err}`);
+                    const errstr = JSON.stringify(err);
+                    logger.error(errstr);
                     //mark the connect as not connected, this will force a reconnect
                     //ideally the ethernet/ip plugin should mark itself not connected
                     //for now do it here.
