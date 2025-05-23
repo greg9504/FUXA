@@ -51,8 +51,9 @@ const EnipTypes = {
     STRUCT: 0x02a0
 };
 var globalIOScanner = undefined; //shared by all Ethernet/IP devices
-function GenericEthernetIPclient(_data, _logger, _events) {
+function GenericEthernetIPclient(_data, _logger, _events, _runtime) {
 
+    var runtime = _runtime;
     var deviceType = 'EthernetIPclient';
     var device = JSON.parse(JSON.stringify(_data)); // Current Device data { id, name, tags, enabled, ... }
     var tagMemoryTable = []; //Buffers indexed by tag id, mirrors memory on device
@@ -172,7 +173,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                     //console.log('calling checkWorking in after readValues in polling');
                     _checkWorking(false, true);
                     if (result && Object.keys(result).length > 0) {
-                        let varsValueChanged = _updateVarsValue(result);
+                        let varsValueChanged = await _updateVarsValue(result);
                         lastTimestampValue = new Date().getTime();
                         _emitValues(varsValue);
                         if (this.addDaq && !utils.isEmptyObject(varsValueChanged)) {
@@ -261,11 +262,11 @@ function GenericEthernetIPclient(_data, _logger, _events) {
      * Set the Tag value to device
      * take the address from
      */
-    this.setValue = function (tagId, value) {
+    this.setValue = async function (tagId, value) {
         if (device.tags[tagId]) {
             const tag = device.tags[tagId];
             const isStringTag = _isStringTag(tag);
-            let valueToSend = isStringTag ? value : deviceUtils.tagRawCalculator(value, tag);
+            let valueToSend = isStringTag ? value : await deviceUtils.tagRawCalculator(value, tag, runtime);
             if (tag.enipOptions?.tagType === EnipTagType.symbolic &&
                 (tag.enipOptions?.symbolicOpt.dataType === EnipTypes.BOOL)) {
                 if (valueToSend === 'true') {
@@ -604,7 +605,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
      * Update the Tags values read
      * @param {*} vars 
      */
-    var _updateVarsValue = (vars) => {
+    var _updateVarsValue = async (vars) => {
         const timestamp = new Date().getTime();
         var changed = {};
         for (const id in vars) {
@@ -612,7 +613,7 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 
                 var valueChanged = itemsMap[id].value !== vars[id];
                 itemsMap[id].rawValue = vars[id];
-                itemsMap[id].value = deviceUtils.tagValueCompose(vars[id], itemsMap[id]);
+                itemsMap[id].value = await deviceUtils.tagValueCompose(vars[id], varsValue[id] ? varsValue[id].value : null, itemsMap[id], runtime);
                 varsValue[id] = { id: id, value: itemsMap[id].value, type: itemsMap[id].type, daq: itemsMap[id].daq, changed: valueChanged, timestamp: timestamp };
                 if (this.addDaq && deviceUtils.tagDaqToSave(varsValue[id], timestamp)) {
                     changed[id] = varsValue[id];
@@ -722,8 +723,8 @@ function GenericEthernetIPclient(_data, _logger, _events) {
                 await conn.disconnect();
                 logger.debug(`${device.name} message connection closed`);
             } catch (error) {
-                logger.debug(`${device.name} Error disconnecting messaege connection`);
-                logger.debug(error.toString());
+                logger.error(`${device.name} Error disconnecting messaege connection`);
+                logger.error(JSON.stringify(error));
                 conn.destroy();
                 conn._removeControllerEventHandlers();
                 logger.debug(`${device.name} forced message connection closed`);
