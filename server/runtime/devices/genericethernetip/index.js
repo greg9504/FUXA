@@ -563,7 +563,11 @@ function GenericEthernetIPclient(_data, _logger, _events, _runtime) {
                 if (device.tags[id].enipOptions?.tagType !== EnipTagType.symbolic) {
                     continue;
                 }
-                const aTag = new STEthernetIp.Tag(device.tags[id].address)
+                //const aTag = new STEthernetIp.Tag(device.tags[id].address);
+                const aTag = new STEthernetIp.Tag(device.tags[id].address,
+                    device.tags[id].enipOptions?.symbolicOpt.program,
+                    device.tags[id].enipOptions?.symbolicOpt.dataType
+                );
                 aTag.FuxaId = id;
                 group.add(aTag);
             }
