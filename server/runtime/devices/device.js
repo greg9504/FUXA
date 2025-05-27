@@ -125,7 +125,7 @@ function Device(data, runtime) {
         if (!GenericEthernetIPclient) {
             return null;
         }
-        comm = GenericEthernetIPclient.create(data, logger, events, manager); 
+        comm = GenericEthernetIPclient.create(data, logger, events, manager, runtime); 
     } 
     // else if (data.type === DeviceEnum.Template) {
     //     if (!TEMPLATEclient) {

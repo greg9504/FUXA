@@ -300,12 +300,12 @@ function GenericEthernetIPclient(_data, _logger, _events, _runtime) {
                     return false;
 
                 }
-                logger.debug(`${device.name} ${tag.name} setValue buffer: ${value}`);
+                logger.debug(`${device.name} ${tag.name} setValue buffer: ${valueToSend}`);
                 let strBuf = undefined;
                 if ((value === undefined || value === null) && tag.enipOptions?.explicitOpt?.sendBuffer?.length > 0) {
                     strBuf = tag.enipOptions.explicitOpt.sendBuffer;
-                } else if (typeof value === 'string') {
-                    strBuf = value;
+                } else if (typeof valueToSend === 'string') {
+                    strBuf = valueToSend;
                 }
                 if (strBuf === undefined) {
                     logger.error(`${device.name} '${tag.name}' Ethernet/IP explicit tag value must be of type string (hex) to set value`);
@@ -327,7 +327,7 @@ function GenericEthernetIPclient(_data, _logger, _events, _runtime) {
                     valueBuf).then(() => {
                         logger.debug(`${device.name} '${tag.name}' setValue ${strBuf} set`);
                     }).catch(error => {
-                        logger.error(`${device.name} '${tag.name}' setValue error! ${error}`);
+                        logger.error(`${device.name} '${tag.name}' setValue error! ${JSON.stringify(error)}`);
                     }); 
                 return true;
             }
@@ -580,7 +580,7 @@ function GenericEthernetIPclient(_data, _logger, _events, _runtime) {
                 });
                 
             } catch(error) {
-                //console.log(JSON.stringify(error));
+                logger.error(JSON.stringify(error));
                 if (error.generalStatusCode !== 8) {//0x08 is not supported
                     //error is something other than not supported
                     throw(error);
@@ -960,12 +960,12 @@ module.exports = {
     init: function (settings) {
         console.log('init plugin Ethernet/IP');
     },
-    create: function (data, logger, events, manager) {
+    create: function (data, logger, events, manager, runtime) {
         // To use with plugin
         process.on('warning', e => console.warn(e.stack));
         try { STEthernetIp = require('st-ethernet-ip'); } catch { }
         if (!STEthernetIp && manager) { try { STEthernetIp = manager.require('st-ethernet-ip'); } catch { } }
         if (!STEthernetIp) return null;
-        return new GenericEthernetIPclient(data, logger, events);
+        return new GenericEthernetIPclient(data, logger, events, runtime);
     }
 }
