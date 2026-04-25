@@ -189,9 +189,10 @@ function GenericEthernetIPclient(_data, _logger, _events, _runtime) {
                     //mark the connect as not connected, this will force a reconnect
                     //ideally the ethernet/ip plugin should mark itself not connected
                     //for now do it here.
-                    if (conn?.established_conn) {
+                    const timeOutError = err.message?.constructor === String && err.message.startsWith('TIMEOUT');
+                    if (conn?.established_conn && timeOutError) {
                         logger.info(`${device.name} lost connection, marking connection closed.  Should reconnect.`);
-                       // conn.established_conn = false;
+                        conn.established_conn = false;
                     }
                     _checkWorking(false, true);
                 }
